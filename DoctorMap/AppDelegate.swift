@@ -34,14 +34,20 @@ class AppDelegate: UIResponder, UIApplicationDelegate, GIDSignInDelegate {
         
         GIDSignIn.sharedInstance().delegate = self
         
-        if GIDSignIn.sharedInstance().hasAuthInKeychain(){
-            print("Already Sign in")
-            GIDSignIn.sharedInstance().signInSilently()
-            
-        }
-        else {
-            print("Not Signed in")
-        }
+//        if GIDSignIn.sharedInstance().hasAuthInKeychain(){
+//            print("Already Sign in")
+//            GIDSignIn.sharedInstance().signInSilently()
+//            
+//        }
+//        else {
+//            print("Not Signed in")
+//            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 1 * Int64(NSEC_PER_SEC)), dispatch_get_main_queue(), {
+//            let sb = UIStoryboard(name: "Main", bundle: nil)
+//            let signInVC = sb.instantiateViewControllerWithIdentifier("signInView")
+//            self.window!.rootViewController = signInVC
+//            })
+//
+//        }
         
         return true
     }
@@ -52,6 +58,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate, GIDSignInDelegate {
                                                     sourceApplication: options[UIApplicationOpenURLOptionsSourceApplicationKey] as? String,
                                                     annotation: options[UIApplicationOpenURLOptionsAnnotationKey])
     }
+    
+    
+    
     func signIn(signIn: GIDSignIn!, didSignInForUser user: GIDGoogleUser!,
                 
                 
@@ -64,6 +73,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, GIDSignInDelegate {
             
             let fetchRequest = NSFetchRequest(entityName: "User")
             fetchRequest.predicate = NSPredicate(format: "userId == %@", currentUser.userID)
+
             
             do {
                 let results =
@@ -104,6 +114,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, GIDSignInDelegate {
             } catch let error as NSError {
                 print("Could not fetch \(error), \(error.userInfo)")
             }
+            
             
             let sb = UIStoryboard(name: "Main", bundle: nil)
             if let tabBarVC = sb.instantiateViewControllerWithIdentifier("tabBarView") as? UITabBarController {

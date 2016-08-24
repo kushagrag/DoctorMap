@@ -10,18 +10,32 @@ import UIKit
 
 class FavouriteTableViewCell: UITableViewCell {
 
-
-    @IBInspectable var cornerRadius: CGFloat = 10
     
     @IBOutlet weak var outerView: UIView!
-    override func layoutSubviews() {
-        outerView.layer.cornerRadius = cornerRadius
-    }
-
+    
     @IBOutlet weak var favImage: UIImageView!
     
     @IBOutlet weak var favName: UILabel!
     
     @IBOutlet weak var favSpeciality: UILabel!
+    
+    @IBInspectable var shadowOffsetWidth: Int = 0
+    @IBInspectable var shadowOffsetHeight: Int = 0
+    @IBInspectable var shadowColor: UIColor? = UIColor.blackColor()
+    @IBInspectable var shadowOpacity: Float = 0.1
+
+
+    
+    override func layoutSubviews() {
+        let shadowPath = UIBezierPath(roundedRect: bounds, cornerRadius: 0)
+        outerView.layer.shadowColor = shadowColor?.CGColor
+        outerView.layer.shadowOffset = CGSize(width: shadowOffsetWidth, height: shadowOffsetHeight);
+        outerView.layer.shadowOpacity = shadowOpacity
+        outerView.layer.shadowPath = shadowPath.CGPath
+        //favImage.layer.cornerRadius = cornerRadius
+        outerView.layer.cornerRadius = 2
+        
+    }
+
     
 }

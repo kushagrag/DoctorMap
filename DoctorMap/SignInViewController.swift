@@ -14,6 +14,7 @@ class SignInViewController: UIViewController, GIDSignInUIDelegate {
     @IBOutlet weak var signInButton: GIDSignInButton!
     override func viewDidLoad() {
         super.viewDidLoad()
+        signInButton.layer.cornerRadius = 10
         GIDSignIn.sharedInstance().uiDelegate = self
         
     }

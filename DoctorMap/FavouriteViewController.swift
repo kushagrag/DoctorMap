@@ -10,6 +10,12 @@ import UIKit
 import Alamofire
 import CoreData
 
+let DispatchAfter: (Int, (()->())?) -> () = { time, closure in
+    dispatch_after(NSEC_PER_SEC * UInt64(time), dispatch_get_main_queue(), {
+        closure?()
+    })
+}
+
 class FavouriteViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
 
     @IBOutlet weak var favTableView: UITableView!
@@ -17,6 +23,7 @@ class FavouriteViewController: UIViewController, UITableViewDelegate, UITableVie
     var doctorList:[AnyObject]!
     
     override func viewDidLoad() {
+
         super.viewDidLoad()
         favTableView.delegate = self
         favTableView.dataSource = self
@@ -26,7 +33,7 @@ class FavouriteViewController: UIViewController, UITableViewDelegate, UITableVie
     }
     
     override func viewWillAppear(animated: Bool) {
-        
+        tabBarController?.tabBar.hidden = false
         let appDelegate = UIApplication.sharedApplication().delegate as! AppDelegate
         let managedContext = appDelegate.managedObjectContext
         var fetchRequest = NSFetchRequest(entityName: "User")
@@ -97,7 +104,41 @@ class FavouriteViewController: UIViewController, UITableViewDelegate, UITableVie
         let docId = sender as! Int
         destinationVC.docId = docId
     }
+    
+    func tableView(tableView: UITableView, commitEditingStyle editingStyle: UITableViewCellEditingStyle, forRowAtIndexPath indexPath: NSIndexPath) {
+        let appDelegate = UIApplication.sharedApplication().delegate as! AppDelegate
+        let managedContext = appDelegate.managedObjectContext
+        var fetchRequest = NSFetchRequest(entityName: "User")
+        fetchRequest.predicate = NSPredicate(format: "userId == %@", currentUser.userID)
+        
+        do{
+            let curUser = try managedContext.executeFetchRequest(fetchRequest)[0]
+            var curDoctorList = curUser.valueForKey("favDoctors") as! [Int]
+            curDoctorList.removeAtIndex(curDoctorList.indexOf(favList[indexPath.row])!)
+            curUser.setValue(curDoctorList, forKey: "favDoctors")
+            fetchRequest = NSFetchRequest(entityName: "Doctors")
+            fetchRequest.predicate = NSPredicate(format: "docId == %ld", favList[indexPath.row])
+            let curDoctor = try managedContext.executeFetchRequest(fetchRequest)
+            let noOfReferences = curDoctor[0].valueForKey("noOfReferences") as! Int
 
+            doctorList.removeAtIndex(indexPath.row)
+            favList.removeAtIndex(indexPath.row)
+            self.favTableView.deleteRowsAtIndexPaths([indexPath], withRowAnimation: .Automatic)
+            
+            if noOfReferences == 0{
+                managedContext.deleteObject(curDoctor[0] as! NSManagedObject)
+            }
+            else {
+                curDoctor[0].setValue(noOfReferences - 1, forKey: "noOfReferences")
+            }
+            try managedContext.save()
+            
+        }catch let error as NSError{
+            print("\(error)")
+        }
+        
+   }
+    
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.

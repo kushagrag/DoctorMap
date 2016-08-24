@@ -3,6 +3,7 @@
     <dependencies>
         <deployment identifier="iOS"/>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="10085"/>
+        <capability name="Aspect ratio constraints" minToolsVersion="5.1"/>
     </dependencies>
     <scenes>
         <!--View Controller-->
@@ -16,7 +17,27 @@
                     <view key="view" contentMode="scaleToFill" id="Ze5-6b-2t3">
                         <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="logo" translatesAutoresizingMaskIntoConstraints="NO" id="nN6-3u-gI1">
+                                <rect key="frame" x="225" y="225" width="150" height="150"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="150" id="Dat-XO-eAA"/>
+                                    <constraint firstAttribute="width" secondItem="nN6-3u-gI1" secondAttribute="height" multiplier="1:1" id="U8a-QF-uuI"/>
+                                    <constraint firstAttribute="width" constant="150" id="lBo-nj-hRb"/>
+                                </constraints>
+                            </imageView>
+                        </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
+                        <constraints>
+                            <constraint firstItem="nN6-3u-gI1" firstAttribute="top" secondItem="Llm-lL-Icb" secondAttribute="bottom" constant="180" id="0wg-ty-sUZ"/>
+                            <constraint firstItem="nN6-3u-gI1" firstAttribute="centerX" secondItem="Ze5-6b-2t3" secondAttribute="centerX" id="1DD-WI-90A"/>
+                            <constraint firstItem="nN6-3u-gI1" firstAttribute="centerY" secondItem="Ze5-6b-2t3" secondAttribute="centerY" id="GJH-P1-eGQ"/>
+                        </constraints>
+                        <variation key="default">
+                            <mask key="constraints">
+                                <exclude reference="0wg-ty-sUZ"/>
+                            </mask>
+                        </variation>
                     </view>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="iYj-Kq-Ea1" userLabel="First Responder" sceneMemberID="firstResponder"/>
@@ -24,4 +45,7 @@
             <point key="canvasLocation" x="53" y="375"/>
         </scene>
     </scenes>
+    <resources>
+        <image name="logo" width="200" height="200"/>
+    </resources>
 </document>

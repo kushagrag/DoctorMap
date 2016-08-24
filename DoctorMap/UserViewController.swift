@@ -38,6 +38,12 @@ class UserViewController: UIViewController {
             print("Cannot Fetch Data, \(error)")
         }
     }
+    
+    override func viewWillAppear(animated: Bool) {
+           tabBarController?.tabBar.hidden = false
+    }
+    
+    
    
     
     @IBAction func signOut(sender: UIButton) {

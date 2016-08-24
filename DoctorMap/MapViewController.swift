@@ -18,8 +18,11 @@ class MapViewController: UIViewController, CLLocationManagerDelegate, iCarouselD
     
     let locationManager = CLLocationManager()
     
+    @IBOutlet weak var mapPin: UIImageView!
+
     @IBOutlet weak var mapView: GMSMapView!
     @IBOutlet weak var carouselView: iCarousel!
+    
     override func viewDidLoad() {
         print(AppDelegate.googleMapsApiKey)
         carouselView.type = iCarouselType.Linear
@@ -27,8 +30,14 @@ class MapViewController: UIViewController, CLLocationManagerDelegate, iCarouselD
         carouselView.dataSource = self
         mapView.delegate = self
         locationManager.delegate = self
-        locationManager.requestWhenInUseAuthorization()
-        print(mapView.myLocation)
+        locationManager.requestAlwaysAuthorization()
+        
+        mapPin.image = UIImage(named: "mapPin")
+               super.viewDidLoad()
+    }
+    
+    override func viewWillAppear(animated: Bool) {
+        tabBarController?.tabBar.hidden = false
         let appDelegate = UIApplication.sharedApplication().delegate as! AppDelegate
         let managedContext = appDelegate.managedObjectContext
         let fetchRequest = NSFetchRequest(entityName: "User")
@@ -45,7 +54,8 @@ class MapViewController: UIViewController, CLLocationManagerDelegate, iCarouselD
         }catch let error as NSError{
             print("Data not fetched \(error), \(error.userInfo)")
         }
-        
+        carouselView.reloadData()
+
     }
     
     func locationManager(manager: CLLocationManager, didChangeAuthorizationStatus status: CLAuthorizationStatus) {
@@ -91,6 +101,7 @@ class MapViewController: UIViewController, CLLocationManagerDelegate, iCarouselD
                 }
             }
         }
+    
 
     
     func showDoctors(city: String, near: String){
@@ -117,6 +128,7 @@ class MapViewController: UIViewController, CLLocationManagerDelegate, iCarouselD
                         }
                         let position = CLLocationCoordinate2DMake(latitude, longitude)
                         let marker = GMSMarker(position: position)
+                        marker.icon = UIImage(named: "doctorPin")
                         marker.appearAnimation = kGMSMarkerAnimationPop
                         marker.title = name
                         marker.userData = docId

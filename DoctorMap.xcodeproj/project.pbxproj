@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0B0DB2D91D6E3384000D1BB3 /* StartViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B0DB2D81D6E3384000D1BB3 /* StartViewController.swift */; };
 		0B1DC6841D64416F000A5690 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0B1DC6831D64416F000A5690 /* QuartzCore.framework */; };
 		0B1DC6861D64557A000A5690 /* MapViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B1DC6851D64557A000A5690 /* MapViewController.swift */; };
 		0B1DC68C1D647307000A5690 /* iCarousel.m in Sources */ = {isa = PBXBuildFile; fileRef = 0B1DC68B1D647307000A5690 /* iCarousel.m */; };
@@ -51,6 +52,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		0B0DB2D81D6E3384000D1BB3 /* StartViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = StartViewController.swift; path = ../StartViewController.swift; sourceTree = "<group>"; };
 		0B1DC6831D64416F000A5690 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
 		0B1DC6851D64557A000A5690 /* MapViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MapViewController.swift; sourceTree = "<group>"; };
 		0B1DC68A1D647300000A5690 /* iCarousel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = iCarousel.h; sourceTree = "<group>"; };
@@ -124,6 +126,7 @@
 		0BB166D01D6B12D90011B526 /* ViewControllers */ = {
 			isa = PBXGroup;
 			children = (
+				0B0DB2D81D6E3384000D1BB3 /* StartViewController.swift */,
 				0B220B401D6C540F00E6C0BB /* DoctorViewController.swift */,
 				0BD040041D6393A4003091EE /* SignInViewController.swift */,
 				0B4BAE121D69FABA00D1D642 /* UserViewController.swift */,
@@ -321,6 +324,7 @@
 				TargetAttributes = {
 					0BD03FFE1D6393A4003091EE = {
 						CreatedOnToolsVersion = 7.3.1;
+						DevelopmentTeam = 45D378V3Z7;
 					};
 					0BD040151D6393A4003091EE = {
 						CreatedOnToolsVersion = 7.3.1;
@@ -515,6 +519,7 @@
 				0B1DC6971D649DE8000A5690 /* CarouselTableViewCell.swift in Sources */,
 				0B9B642A1D6ACC9500CC7828 /* FavouriteTableViewCell.swift in Sources */,
 				0B4BAE131D69FABA00D1D642 /* UserViewController.swift in Sources */,
+				0B0DB2D91D6E3384000D1BB3 /* StartViewController.swift in Sources */,
 				0B1DC68C1D647307000A5690 /* iCarousel.m in Sources */,
 				0BD040051D6393A4003091EE /* SignInViewController.swift in Sources */,
 				0BD040031D6393A4003091EE /* AppDelegate.swift in Sources */,
@@ -666,10 +671,14 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				INFOPLIST_FILE = DoctorMap/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.3;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = practo.DoctorMap;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE = "";
 				SWIFT_OBJC_BRIDGING_HEADER = "DoctorMap/DoctorMap-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 			};
@@ -681,10 +690,14 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				INFOPLIST_FILE = DoctorMap/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.3;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = practo.DoctorMap;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE = "";
 				SWIFT_OBJC_BRIDGING_HEADER = "DoctorMap/DoctorMap-Bridging-Header.h";
 			};
 			name = Release;
