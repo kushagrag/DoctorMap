@@ -74,7 +74,7 @@ class DoctorViewController: UIViewController,UITableViewDelegate, UITableViewDat
                     let practice = doctor["relations"][0]["practice"]
                     
                     if practice["photos"].count == 0{
-                        self.clinicPhotoUrl = "profile-bg"
+                        self.clinicPhotoUrl = "clinicDefault"
                     }
                     else{
                         self.clinicPhotoUrl = (practice["photos"][0]["url"].string!).stringByAddingPercentEncodingWithAllowedCharacters(.URLQueryAllowedCharacterSet())
@@ -178,8 +178,8 @@ class DoctorViewController: UIViewController,UITableViewDelegate, UITableViewDat
             cell.layer.shadowOpacity = 0.1
             cell.clinicImage.layer.cornerRadius = (cell.clinicImage.frame.width) / 2
             cell.clinicImage.clipsToBounds = true
-            if clinicPhotoUrl == "profile-bg"{
-                cell.clinicImage.image = UIImage(named: "profile-bg")
+            if clinicPhotoUrl == "clinicDefault"{
+                cell.clinicImage.image = UIImage(named: "clinicDefault")
             }
             else{
                 Alamofire.request(.GET, clinicPhotoUrl).responseJSON{ response in
