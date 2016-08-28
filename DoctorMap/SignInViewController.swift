@@ -18,11 +18,15 @@ class SignInViewController: UIViewController, GIDSignInUIDelegate {
         GIDSignIn.sharedInstance().uiDelegate = self
         
     }
-
+    
+   
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
     }
+    
+    func signIn(signIn: GIDSignIn!, dismissViewController viewController: UIViewController!) {
 
+    }
+    
 }
-

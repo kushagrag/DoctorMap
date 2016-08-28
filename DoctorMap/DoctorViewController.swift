@@ -8,83 +8,238 @@
 
 import UIKit
 import Alamofire
+import SwiftyJSON
 
-class DoctorViewController: UIViewController {
-
+class DoctorViewController: UIViewController,UITableViewDelegate, UITableViewDataSource, GMSMapViewDelegate,CLLocationManagerDelegate{
+    
+    var cell:DoctorTableViewCell!
     var docId:Int!
     
-    @IBOutlet weak var addressLabel: UILabel!
-    @IBOutlet weak var practiceImage: UIImageView!
-    @IBOutlet weak var doctorImage: UIImageView!
-    @IBOutlet weak var nameLabel: UILabel!
-    @IBOutlet weak var specialityLabel: UILabel!
-    @IBOutlet weak var feeLabel: UILabel!
+    let locationManager = CLLocationManager()
+    var map:GMSMapView!
     
-    @IBOutlet weak var experienceLabel: UILabel!
-    @IBOutlet weak var genderLabel: UILabel!
+    @IBOutlet weak var doctorTableView: UITableView!
+    
+    var docName:String!
+    var experience:Int!
+    var qualification:String!
+    var docPhotoUrl:String!
+    var clinicPhotoUrl:String!
+    var consultationFee:String!
+    var address:NSMutableAttributedString!
+    var speciality:String!
+    var locality:String!
+    var clinicName:String!
+    var timings:String!
+    var services:JSON!
+    
+    
     override func viewDidLoad() {
         tabBarController?.tabBar.hidden = true
-        doctorImage.layer.borderWidth = 3.0
-        doctorImage.layer.borderColor = UIColor.whiteColor().CGColor
-        doctorImage.layer.cornerRadius = 10.0
-        doctorImage.clipsToBounds = true
-    
+        self.doctorTableView.estimatedRowHeight = 300
+        self.doctorTableView.rowHeight = UITableViewAutomaticDimension
+        if UtiltyFunction.checkInternetConnection() == false{
+            self.alert("To see Doctor Profile you need Internet connection", title: "No Internet Connection"){ (action: UIAlertAction!) in
+                         self.navigationController?.popViewControllerAnimated(true)
+                }
+        }
         
-       
-        
-        super.viewDidLoad()
         Alamofire.request(.GET, "https://api.practo.com/doctors/\(docId)", parameters: ["id": docId, "with_relations": "true"], headers:["X-API-KEY":API_KEY, "X-CLIENT-ID":CLIENT_ID]).responseJSON { response in
-            print(response.request)
-            if let doctor = response.result.value {
-                let docName = doctor.valueForKey("name") as! String
-                self.nameLabel.text = docName
-                let experience = doctor.valueForKey("experience_years") as! Int
-                self.experienceLabel.text = "Experience : \(experience)yrs"
-                let gender = doctor.valueForKey("gender") as! String
-                if gender == "M"{
-                    self.genderLabel.text = "Male"
-                }
-                else{
-                    self.genderLabel.text = "Female"
-                }
-                if doctor.valueForKey("photos")!.count == 0{
-                    self.doctorImage.image = UIImage(named: "docImage")
-                }
-                else{
-                   Alamofire.request(.GET, doctor.valueForKey("photos")![0]["photo_url"] as! String).responseJSON{ response in
-                        self.doctorImage.image = UIImage(data: response.data!)
+            
+            switch response.result{
+            case .Success :
+                    let doctor = JSON(response.result.value!)
+                    
+                    self.docName = doctor["name"].string
+                    
+                    if doctor["experience_year"] != nil{
+                        self.experience = doctor["experience_year"].int
                     }
-                }
-                let practice = doctor.valueForKey("relations")!.valueForKey("practice")![0]
-                if practice.valueForKey("photos")!.count == 0{
-                    self.practiceImage.image = UIImage(named: "profile-bg")
-                }
-                else{
-                    Alamofire.request(.GET, practice.valueForKey("photos")![0].valueForKey("url") as! String).responseJSON{response in
-                        self.practiceImage.image = UIImage(data: response.data!)
+                    else if doctor["experience_years"] != nil{
+                        self.experience = doctor["experience_years"].int
                     }
-                }
-                var address = practice.valueForKey("street_address") as! String
-                address = address.stringByReplacingOccurrencesOfString("\r\n", withString: " ")
+                    else{
+                        self.experience = 0
+                    }
+                    
+                    self.qualification = (doctor["qualifications"][0]["qualification"]["name"].string!).stringByAddingPercentEncodingWithAllowedCharacters(.URLQueryAllowedCharacterSet())
+                    
+                    if doctor["photos"].count == 0{
+                        self.docPhotoUrl =  "docImage"
+                    }
+                    else{
+                        self.docPhotoUrl = doctor["photos"][0]["photo_url"].string!
+                    }
+                    
+                    let practice = doctor["relations"][0]["practice"]
+                    
+                    if practice["photos"].count == 0{
+                        self.clinicPhotoUrl = "profile-bg"
+                    }
+                    else{
+                        self.clinicPhotoUrl = (practice["photos"][0]["url"].string!).stringByAddingPercentEncodingWithAllowedCharacters(.URLQueryAllowedCharacterSet())
+                    }
+                    
+                    if practice["locality"]["name"].string != nil{
+                     self.locality = practice["locality"]["name"].string!
+                    }
+                    else{
+                        self.locality = ""
+                    }
+                    
+                    if practice["name"].string != nil{
+                        self.clinicName = practice["name"].string!
+                    }
+                    else{
+                        self.clinicName = ""
+                    }
+                    
+                    if practice["timings"] != nil{
+                        let time = practice["timings"]["monday"]
+                        self.timings = "\(time["session1_start_time"].string!)-\(time["session1_end_time"].string!)"
+                        if time["session2_start_time"].string! != ""{
+                            self.timings = self.timings + " and \(time["session2_start_time"].string!)-\(time["session2_end_time"].string!)"
+                        }
+                    }
+                    else{
+                        self.timings = "Not Available"
+                    }
+                    
+                    self.services = doctor["services"]
+                    
+                    
+                    if doctor["relations"][0]["consultation_fee"].string != nil{
+                        self.consultationFee = "Rs.\(doctor["relations"][0]["consultation_fee"].string!)"
+                    }
+                    else{
+                        self.consultationFee = "Not Available"
+                    }
+                    
+                    self.speciality = doctor["specializations"][0]["subspecialization"]["subspecialization"].string
+                    
+                    dispatch_async(dispatch_get_main_queue(),{
+                        self.loadData()
+                        })
 
-                let paragraphStyle = NSMutableParagraphStyle()
-                paragraphStyle.lineSpacing = 1
-                let attrString = NSMutableAttributedString(string: address)
-                attrString.addAttribute(NSParagraphStyleAttributeName, value:paragraphStyle, range:NSMakeRange(0, attrString.length))
-                self.addressLabel.attributedText = attrString
-                self.addressLabel.textAlignment = NSTextAlignment.Center
-                let consultationFee = doctor.valueForKey("relations")!.valueForKey("consultation_fee")![0]
-                self.feeLabel.text = "Consultation Fee : Rs.\(consultationFee)"
-                let speciality = doctor.valueForKey("specializations")!.valueForKey("subspecialization")!.valueForKey("subspecialization")
-               self.specialityLabel.text = speciality![0] as? String
-   
+                    
+                    break
+                
+            case .Failure:
+                print("Cannot show Doctors data")
+                
             }
         }
+        super.viewDidLoad()
+        
+    }
+    
+    func loadData(){
+        doctorTableView.delegate = self
+        doctorTableView.dataSource = self
+        doctorTableView.reloadData()
+    }
+    
+    //MARK: TableView Delegates
+    
+    func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        return 5
     }
 
+    func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
+        
+        
+        
+        if indexPath.row == 0{
+            let cell = tableView.dequeueReusableCellWithIdentifier("cell1") as! DoctorTableViewCell
+            cell.layer.shadowOffset = CGSize(width: 3, height: 3);
+            cell.layer.shadowOpacity = 0.1
+            cell.doctorImage.layer.cornerRadius = (cell.doctorImage.frame.width) / 2
+            cell.doctorImage.clipsToBounds = true
+            if docPhotoUrl == "docImage"{
+                cell.doctorImage.image = UIImage(named: "docImage")
+            }
+            else{
+                Alamofire.request(.GET, docPhotoUrl).responseJSON{ response in
+                    cell.doctorImage.image = UIImage(data: response.data!)
+                }
+            }
+            cell.nameLabel.text = docName
+            cell.qualificationLabel.text = qualification
+            cell.qualificationLabel.textColor = UIColor.grayColor()
+            cell.specialityLabel.text = speciality
+            cell.specialityLabel.textColor = UIColor.grayColor()
+            cell.experienceLabel.text = "\(experience) years of Experience"
+            cell.experienceLabel.textColor = UIColor.grayColor()
+            return cell
+        }
+        else if indexPath.row == 1{
+            let cell = tableView.dequeueReusableCellWithIdentifier("cell2") as! DoctorTableViewCell
+            cell.layer.shadowOffset = CGSize(width: 3, height: 3);
+            cell.layer.shadowOpacity = 0.1
+            cell.clinicImage.layer.cornerRadius = (cell.clinicImage.frame.width) / 2
+            cell.clinicImage.clipsToBounds = true
+            if clinicPhotoUrl == "profile-bg"{
+                cell.clinicImage.image = UIImage(named: "profile-bg")
+            }
+            else{
+                Alamofire.request(.GET, clinicPhotoUrl).responseJSON{ response in
+                    cell.clinicImage.image = UIImage(data: response.data!)
+                }
+            }
+            
+            cell.clinicName.text = clinicName
+            cell.locality.text = locality
+            
+            return cell
+        }
+        else if indexPath.row == 2 {
+            let cell = tableView.dequeueReusableCellWithIdentifier("cell3") as! DoctorTableViewCell
+            cell.layer.shadowOffset = CGSize(width: 3, height: 3);
+            cell.layer.shadowOpacity = 0.1
+            cell.feeLabel.text = consultationFee
+            return cell
+        }
+        else if indexPath.row == 3 {
+            let cell = tableView.dequeueReusableCellWithIdentifier("cell4") as! DoctorTableViewCell
+            cell.layer.shadowOffset = CGSize(width: 3, height: 3);
+            cell.layer.shadowOpacity = 0.1
+            cell.timingLabel.text = timings
+            return cell
+        }
+        else {
+            var cell:DoctorTableViewCell!
+            if services.count == 0{
+                cell = tableView.dequeueReusableCellWithIdentifier("cell8") as! DoctorTableViewCell
+                return cell
+            }
+            else if services.count == 1{
+                print("cell5")
+                cell = tableView.dequeueReusableCellWithIdentifier("cell5") as! DoctorTableViewCell
+                cell.service1.text = services[0]["service"]["name"].string!
+            }
+            else if services.count == 2{
+                print("cell6")
+                cell = tableView.dequeueReusableCellWithIdentifier("cell6") as! DoctorTableViewCell
+                cell.service1.text = services[0]["service"]["name"].string!
+                cell.service2.text = services[1]["service"]["name"].string!
+            }
+            else{
+                print("cell7")
+                cell = tableView.dequeueReusableCellWithIdentifier("cell7") as! DoctorTableViewCell
+                cell.service1.text = services[0]["service"]["name"].string!
+                cell.service2.text = services[1]["service"]["name"].string!
+                cell.service3.text = services[2]["service"]["name"].string!
+            }
+            cell.layer.shadowOffset = CGSize(width: 3, height: 3);
+            cell.layer.shadowOpacity = 0.1
+            return cell
+        }
+       
+}
+    
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
 
     }
-
+    
 }

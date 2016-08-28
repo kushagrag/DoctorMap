@@ -9,12 +9,9 @@
 import UIKit
 import Alamofire
 import CoreData
+import SwiftyJSON
 
-let DispatchAfter: (Int, (()->())?) -> () = { time, closure in
-    dispatch_after(NSEC_PER_SEC * UInt64(time), dispatch_get_main_queue(), {
-        closure?()
-    })
-}
+
 
 class FavouriteViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
 
@@ -31,6 +28,8 @@ class FavouriteViewController: UIViewController, UITableViewDelegate, UITableVie
         favTableView.registerNib(nib, forCellReuseIdentifier: "cell")
         
     }
+    
+    //MARK: Retrieving User Favourites
     
     override func viewWillAppear(animated: Bool) {
         tabBarController?.tabBar.hidden = false
@@ -64,18 +63,25 @@ class FavouriteViewController: UIViewController, UITableViewDelegate, UITableVie
                 print("Data not fetched \(error), \(error.userInfo)")
             }
         }
-        favTableView.reloadData()
         
     }
     
-    func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    override func viewDidAppear(animated: Bool) {
+        favTableView.reloadData()
+    }
     
+    //MARK: TableView Delegates
+
+    func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        
         if favList == nil{
             return 0
         }
-       
-            return favList.count
+        
+        return favList.count
     }
+
+    
     
     
     func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
@@ -106,37 +112,11 @@ class FavouriteViewController: UIViewController, UITableViewDelegate, UITableVie
     }
     
     func tableView(tableView: UITableView, commitEditingStyle editingStyle: UITableViewCellEditingStyle, forRowAtIndexPath indexPath: NSIndexPath) {
-        let appDelegate = UIApplication.sharedApplication().delegate as! AppDelegate
-        let managedContext = appDelegate.managedObjectContext
-        var fetchRequest = NSFetchRequest(entityName: "User")
-        fetchRequest.predicate = NSPredicate(format: "userId == %@", currentUser.userID)
         
-        do{
-            let curUser = try managedContext.executeFetchRequest(fetchRequest)[0]
-            var curDoctorList = curUser.valueForKey("favDoctors") as! [Int]
-            curDoctorList.removeAtIndex(curDoctorList.indexOf(favList[indexPath.row])!)
-            curUser.setValue(curDoctorList, forKey: "favDoctors")
-            fetchRequest = NSFetchRequest(entityName: "Doctors")
-            fetchRequest.predicate = NSPredicate(format: "docId == %ld", favList[indexPath.row])
-            let curDoctor = try managedContext.executeFetchRequest(fetchRequest)
-            let noOfReferences = curDoctor[0].valueForKey("noOfReferences") as! Int
-
-            doctorList.removeAtIndex(indexPath.row)
-            favList.removeAtIndex(indexPath.row)
-            self.favTableView.deleteRowsAtIndexPaths([indexPath], withRowAnimation: .Automatic)
-            
-            if noOfReferences == 0{
-                managedContext.deleteObject(curDoctor[0] as! NSManagedObject)
-            }
-            else {
-                curDoctor[0].setValue(noOfReferences - 1, forKey: "noOfReferences")
-            }
-            try managedContext.save()
-            
-        }catch let error as NSError{
-            print("\(error)")
-        }
-        
+        DatabaseHelper.removeFavourite(favList[indexPath.row])
+        doctorList.removeAtIndex(indexPath.row)
+        favList.removeAtIndex(indexPath.row)
+        tableView.deleteRowsAtIndexPaths([indexPath], withRowAnimation: .Automatic)
    }
     
     override func didReceiveMemoryWarning() {

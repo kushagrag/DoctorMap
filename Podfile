@@ -6,6 +6,8 @@ target 'DoctorMap' do
   pod 'Google/SignIn'
   pod 'GoogleMaps'
   pod 'Alamofire', '~> 3.4'
+  pod 'SwiftyJSON'
+  pod 'ReachabilitySwift'
   # Comment this line if you're not using Swift and don't want to use dynamic frameworks
   use_frameworks!
 

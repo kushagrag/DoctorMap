@@ -17,9 +17,13 @@
 		0B3210D91D658FB6007F5933 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0B3210D81D658FB6007F5933 /* CoreGraphics.framework */; };
 		0B4BAE111D69956100D1D642 /* Doctor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B4BAE101D69956100D1D642 /* Doctor.swift */; };
 		0B4BAE131D69FABA00D1D642 /* UserViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B4BAE121D69FABA00D1D642 /* UserViewController.swift */; };
+		0B6C57051D70DAFC00FF7DF7 /* DoctorTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B6C57041D70DAFC00FF7DF7 /* DoctorTableViewCell.swift */; };
+		0B97FF761D72B65200711E90 /* DatabaseHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B97FF751D72B65200711E90 /* DatabaseHelper.swift */; };
+		0B97FF791D72D48800711E90 /* UtilityFunctions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B97FF781D72D48800711E90 /* UtilityFunctions.swift */; };
 		0B9B64271D6ACAF700CC7828 /* FavouriteViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B9B64261D6ACAF700CC7828 /* FavouriteViewController.swift */; };
 		0B9B642A1D6ACC9500CC7828 /* FavouriteTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B9B64281D6ACC9500CC7828 /* FavouriteTableViewCell.swift */; };
 		0B9B642B1D6ACC9500CC7828 /* FavouriteTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 0B9B64291D6ACC9500CC7828 /* FavouriteTableViewCell.xib */; };
+		0BAE56A11D6F2FFC0078B71D /* DataUtil.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0BAE56A01D6F2FFC0078B71D /* DataUtil.swift */; };
 		0BD040031D6393A4003091EE /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0BD040021D6393A4003091EE /* AppDelegate.swift */; };
 		0BD040051D6393A4003091EE /* SignInViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0BD040041D6393A4003091EE /* SignInViewController.swift */; };
 		0BD040081D6393A4003091EE /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 0BD040061D6393A4003091EE /* Main.storyboard */; };
@@ -63,9 +67,13 @@
 		0B3210D81D658FB6007F5933 /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
 		0B4BAE101D69956100D1D642 /* Doctor.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Doctor.swift; sourceTree = "<group>"; };
 		0B4BAE121D69FABA00D1D642 /* UserViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UserViewController.swift; sourceTree = "<group>"; };
+		0B6C57041D70DAFC00FF7DF7 /* DoctorTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DoctorTableViewCell.swift; sourceTree = "<group>"; };
+		0B97FF751D72B65200711E90 /* DatabaseHelper.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DatabaseHelper.swift; sourceTree = "<group>"; };
+		0B97FF781D72D48800711E90 /* UtilityFunctions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UtilityFunctions.swift; sourceTree = "<group>"; };
 		0B9B64261D6ACAF700CC7828 /* FavouriteViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FavouriteViewController.swift; sourceTree = "<group>"; };
 		0B9B64281D6ACC9500CC7828 /* FavouriteTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FavouriteTableViewCell.swift; sourceTree = "<group>"; };
 		0B9B64291D6ACC9500CC7828 /* FavouriteTableViewCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = FavouriteTableViewCell.xib; sourceTree = "<group>"; };
+		0BAE56A01D6F2FFC0078B71D /* DataUtil.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DataUtil.swift; sourceTree = "<group>"; };
 		0BD03FFF1D6393A4003091EE /* DoctorMap.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DoctorMap.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		0BD040021D6393A4003091EE /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		0BD040041D6393A4003091EE /* SignInViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignInViewController.swift; sourceTree = "<group>"; };
@@ -123,6 +131,16 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		0B97FF771D72B66600711E90 /* Utilities */ = {
+			isa = PBXGroup;
+			children = (
+				0B97FF781D72D48800711E90 /* UtilityFunctions.swift */,
+				0B97FF751D72B65200711E90 /* DatabaseHelper.swift */,
+				0BAE56A01D6F2FFC0078B71D /* DataUtil.swift */,
+			);
+			name = Utilities;
+			sourceTree = "<group>";
+		};
 		0BB166D01D6B12D90011B526 /* ViewControllers */ = {
 			isa = PBXGroup;
 			children = (
@@ -147,6 +165,7 @@
 		0BB166D21D6B13180011B526 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				0B6C57041D70DAFC00FF7DF7 /* DoctorTableViewCell.swift */,
 				0B9B64281D6ACC9500CC7828 /* FavouriteTableViewCell.swift */,
 				0B9B64291D6ACC9500CC7828 /* FavouriteTableViewCell.xib */,
 				0B1DC6951D649DE8000A5690 /* CarouselTableViewCell.swift */,
@@ -191,6 +210,7 @@
 			isa = PBXGroup;
 			children = (
 				0BD040021D6393A4003091EE /* AppDelegate.swift */,
+				0B97FF771D72B66600711E90 /* Utilities */,
 				0BB166D21D6B13180011B526 /* Views */,
 				0BB166D31D6B13880011B526 /* Header */,
 				0BB166D01D6B12D90011B526 /* ViewControllers */,
@@ -515,16 +535,20 @@
 			buildActionMask = 2147483647;
 			files = (
 				0BD0400B1D6393A4003091EE /* DoctorMap.xcdatamodeld in Sources */,
+				0B97FF761D72B65200711E90 /* DatabaseHelper.swift in Sources */,
 				0B4BAE111D69956100D1D642 /* Doctor.swift in Sources */,
 				0B1DC6971D649DE8000A5690 /* CarouselTableViewCell.swift in Sources */,
 				0B9B642A1D6ACC9500CC7828 /* FavouriteTableViewCell.swift in Sources */,
+				0B6C57051D70DAFC00FF7DF7 /* DoctorTableViewCell.swift in Sources */,
 				0B4BAE131D69FABA00D1D642 /* UserViewController.swift in Sources */,
 				0B0DB2D91D6E3384000D1BB3 /* StartViewController.swift in Sources */,
 				0B1DC68C1D647307000A5690 /* iCarousel.m in Sources */,
 				0BD040051D6393A4003091EE /* SignInViewController.swift in Sources */,
+				0BAE56A11D6F2FFC0078B71D /* DataUtil.swift in Sources */,
 				0BD040031D6393A4003091EE /* AppDelegate.swift in Sources */,
 				0B9B64271D6ACAF700CC7828 /* FavouriteViewController.swift in Sources */,
 				0B1DC6861D64557A000A5690 /* MapViewController.swift in Sources */,
+				0B97FF791D72D48800711E90 /* UtilityFunctions.swift in Sources */,
 				0B220B411D6C540F00E6C0BB /* DoctorViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -617,7 +641,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 9.3;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
@@ -657,7 +681,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 9.3;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -674,7 +698,7 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				INFOPLIST_FILE = DoctorMap/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 9.3;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = practo.DoctorMap;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -693,7 +717,7 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				INFOPLIST_FILE = DoctorMap/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 9.3;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = practo.DoctorMap;
 				PRODUCT_NAME = "$(TARGET_NAME)";

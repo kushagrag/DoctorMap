@@ -23,10 +23,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate, GIDSignInDelegate {
     func application(application: UIApplication, didFinishLaunchingWithOptions launchOptions: [NSObject: AnyObject]?) -> Bool {
         
         
-        let fileManager = NSFileManager.defaultManager()
-        let documents = try! fileManager.URLForDirectory(.DocumentDirectory, inDomain: .UserDomainMask, appropriateForURL: nil, create: false)
-        print(documents)
-        
         var configureError: NSError?
         GGLContext.sharedInstance().configureWithError(&configureError)
         GMSServices.provideAPIKey(AppDelegate.googleMapsApiKey)
@@ -34,26 +30,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate, GIDSignInDelegate {
         
         GIDSignIn.sharedInstance().delegate = self
         
-//        if GIDSignIn.sharedInstance().hasAuthInKeychain(){
-//            print("Already Sign in")
-//            GIDSignIn.sharedInstance().signInSilently()
-//            
-//        }
-//        else {
-//            print("Not Signed in")
-//            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 1 * Int64(NSEC_PER_SEC)), dispatch_get_main_queue(), {
-//            let sb = UIStoryboard(name: "Main", bundle: nil)
-//            let signInVC = sb.instantiateViewControllerWithIdentifier("signInView")
-//            self.window!.rootViewController = signInVC
-//            })
-//
-//        }
+
         
         return true
     }
     
-    func application(application: UIApplication,
-                     openURL url: NSURL, options: [String: AnyObject]) -> Bool {
+    func application(application: UIApplication, openURL url: NSURL, options: [String: AnyObject]) -> Bool {
         return GIDSignIn.sharedInstance().handleURL(url,
                                                     sourceApplication: options[UIApplicationOpenURLOptionsSourceApplicationKey] as? String,
                                                     annotation: options[UIApplicationOpenURLOptionsAnnotationKey])
@@ -61,61 +43,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate, GIDSignInDelegate {
     
     
     
-    func signIn(signIn: GIDSignIn!, didSignInForUser user: GIDGoogleUser!,
-                
-                
-                withError error: NSError!) {
+    func signIn(signIn: GIDSignIn!, didSignInForUser user: GIDGoogleUser!, withError error: NSError!) {
         
         if (error == nil) {
             currentUser = user
-            let appDelegate = UIApplication.sharedApplication().delegate as! AppDelegate
-            let managedContext = appDelegate.managedObjectContext
-            
-            let fetchRequest = NSFetchRequest(entityName: "User")
-            fetchRequest.predicate = NSPredicate(format: "userId == %@", currentUser.userID)
-
-            
-            do {
-                let results =
-                    try managedContext.executeFetchRequest(fetchRequest)
-                if (results.count == 0){
-                    print("User Created")
-                    let entity =  NSEntityDescription.entityForName("User",
-                                                                    inManagedObjectContext:managedContext)
-                    let user = NSManagedObject(entity: entity!,
-                                                 insertIntoManagedObjectContext: managedContext)
-                    user.setValue(currentUser.userID, forKey: "userId")
-                    user.setValue(currentUser.profile.name, forKey: "name")
-                    user.setValue(currentUser.profile.email, forKey: "email")
-                    var photo:NSData!
-                    if currentUser.profile.hasImage == true{
-                        Alamofire.request(.GET, currentUser.profile.imageURLWithDimension(128)).responseJSON{response in
-                            photo = response.data!
-                            user.setValue(photo, forKey: "photo")
-                            do {
-                                try managedContext.save()
-                            } catch let error as NSError  {
-                                print("Could not save \(error), \(error.userInfo)")
-                            }
-                        }
-                    
-                    }
-                    else{
-                        photo = UIImagePNGRepresentation(UIImage(named: "profile-default")!)
-                        user.setValue(photo, forKey: "photo")
-                        do {
-                            try managedContext.save()
-                        } catch let error as NSError  {
-                            print("Could not save \(error), \(error.userInfo)")
-                        }
-                    }
-                    
-                }
-            } catch let error as NSError {
-                print("Could not fetch \(error), \(error.userInfo)")
-            }
-            
-            
+            DatabaseHelper.createUser()
             let sb = UIStoryboard(name: "Main", bundle: nil)
             if let tabBarVC = sb.instantiateViewControllerWithIdentifier("tabBarView") as? UITabBarController {
                 window!.rootViewController = tabBarVC
@@ -124,6 +56,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, GIDSignInDelegate {
             print("\(error.localizedDescription)")
         }
     }
+    
     
     func signIn(signIn: GIDSignIn!, didDisconnectWithUser user:GIDGoogleUser!,
                 withError error: NSError!) {

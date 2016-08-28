@@ -11,6 +11,8 @@ import CoreData
 
 class UserViewController: UIViewController {
     
+    //MARK: Properties
+    
     @IBOutlet weak var profileImage: UIImageView!
     @IBOutlet weak var name: UILabel!
     @IBOutlet weak var backgrounImage: UIImageView!
@@ -38,15 +40,25 @@ class UserViewController: UIViewController {
             print("Cannot Fetch Data, \(error)")
         }
     }
-    
-    override func viewWillAppear(animated: Bool) {
-           tabBarController?.tabBar.hidden = false
-    }
-    
-    
    
+    //MARK: Actions
     
     @IBAction func signOut(sender: UIButton) {
-        GIDSignIn.sharedInstance().signOut()
+        let signOutAlert = UIAlertController(title: "SignOut", message: "Really want to Sign Out", preferredStyle: .ActionSheet)
+        
+        let signOutAction = UIAlertAction(title: "Confirm", style: .Default, handler: { (action: UIAlertAction!) in
+             GIDSignIn.sharedInstance().signOut()
+             self.performSegueWithIdentifier("showSignSegue", sender: self)
+        })
+        
+        let cancelAction = UIAlertAction(title: "Cancel", style: .Cancel, handler: { (action: UIAlertAction!) in
+        })
+        
+        signOutAlert.addAction(signOutAction)
+        signOutAlert.addAction(cancelAction)
+        
+        presentViewController(signOutAlert, animated: true, completion: nil)
+
+       
     }
 }

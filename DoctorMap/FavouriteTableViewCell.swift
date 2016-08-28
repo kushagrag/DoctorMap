@@ -27,12 +27,13 @@ class FavouriteTableViewCell: UITableViewCell {
 
     
     override func layoutSubviews() {
+        super.layoutSubviews()
         let shadowPath = UIBezierPath(roundedRect: bounds, cornerRadius: 0)
         outerView.layer.shadowColor = shadowColor?.CGColor
         outerView.layer.shadowOffset = CGSize(width: shadowOffsetWidth, height: shadowOffsetHeight);
         outerView.layer.shadowOpacity = shadowOpacity
         outerView.layer.shadowPath = shadowPath.CGPath
-        //favImage.layer.cornerRadius = cornerRadius
+        favImage.layer.cornerRadius = favImage.frame.width / 2
         outerView.layer.cornerRadius = 2
         
     }

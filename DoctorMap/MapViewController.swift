@@ -8,33 +8,53 @@
 import Alamofire
 import UIKit
 import CoreData
+import SwiftyJSON
 
 let API_KEY = "D18gu+vKDIls9zuftc/zQx6c5F0="
 let CLIENT_ID = "d0f8c219-b504-4ead-9c78-705bcfab2e21"
 var doctors:[Doctor] = []
 var favDoctorList:[Int]!
 
-class MapViewController: UIViewController, CLLocationManagerDelegate, iCarouselDelegate, iCarouselDataSource, GMSMapViewDelegate{
+class MapViewController: UIViewController, CLLocationManagerDelegate, iCarouselDelegate, iCarouselDataSource, GMSMapViewDelegate, UISearchBarDelegate,UITableViewDelegate,UITableViewDataSource{
     
+    @IBOutlet weak var dropDown: UITableView!
     let locationManager = CLLocationManager()
     
+    var speciality:String = ""
+    var matchingSpecialities:[String] = []
+    
     @IBOutlet weak var mapPin: UIImageView!
-
+    @IBOutlet weak var searchSpeciality: UISearchBar!
     @IBOutlet weak var mapView: GMSMapView!
     @IBOutlet weak var carouselView: iCarousel!
     
+    //MARK: Delegates
+    
     override func viewDidLoad() {
-        print(AppDelegate.googleMapsApiKey)
+        dropDown.hidden = true
+        dropDown.delegate = self
+        dropDown.dataSource = self
+        self.dropDown.registerClass(UITableViewCell.self, forCellReuseIdentifier: "cell")
+        
+        dropDown.layer.cornerRadius = 5
+        
         carouselView.type = iCarouselType.Linear
         carouselView.delegate = self
         carouselView.dataSource = self
+        
+        searchSpeciality.enablesReturnKeyAutomatically = false;
+        searchSpeciality.delegate = self
+        
         mapView.delegate = self
         locationManager.delegate = self
-        locationManager.requestAlwaysAuthorization()
+        
+        locationManager.requestWhenInUseAuthorization()
         
         mapPin.image = UIImage(named: "mapPin")
                super.viewDidLoad()
     }
+    
+    //MARK: Load Favourites
     
     override func viewWillAppear(animated: Bool) {
         tabBarController?.tabBar.hidden = false
@@ -58,6 +78,55 @@ class MapViewController: UIViewController, CLLocationManagerDelegate, iCarouselD
 
     }
     
+    //MARK: DropDown Search
+    
+    func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        
+        return matchingSpecialities.count
+    }
+    
+    func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
+        
+        let cell = tableView.dequeueReusableCellWithIdentifier("cell", forIndexPath: indexPath)
+        cell.textLabel!.text = matchingSpecialities[indexPath.row]
+        return cell
+    }
+    
+    func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
+        speciality = matchingSpecialities[indexPath.row]
+        searchSpeciality.text = speciality
+        self.searchBarSearchButtonClicked(searchSpeciality)
+    }
+    
+    //MARK: SearchBar
+    
+    func searchBar(searchBar: UISearchBar, textDidChange searchText: String) {
+       dropDown.hidden = false
+        if searchText == "" {
+            dropDown.hidden = true
+        }
+        else {
+        matchingSpecialities = DataUtil.Specialities.filter( {
+            $0.rangeOfString(searchText, options: .CaseInsensitiveSearch) !=  nil
+        })
+            if matchingSpecialities.count == 0{
+                dropDown.hidden = true
+            }
+        }
+
+        dropDown.reloadData()
+    }
+    
+    
+    func searchBarSearchButtonClicked(searchBar: UISearchBar) {
+        dropDown.hidden = true
+        searchBar.resignFirstResponder()
+        speciality = searchBar.text!
+        self.mapView(mapView, idleAtCameraPosition: mapView.camera)
+    }
+
+    //MARK: MapDelegates
+
     func locationManager(manager: CLLocationManager, didChangeAuthorizationStatus status: CLAuthorizationStatus) {
         if status == .AuthorizedWhenInUse {
             
@@ -77,12 +146,23 @@ class MapViewController: UIViewController, CLLocationManagerDelegate, iCarouselD
         
     }
     
+    func mapView(mapView: GMSMapView, didTapMarker marker: GMSMarker) -> Bool {
+        mapView.selectedMarker = marker
+        let index = doctors.indexOf({$0.docId == marker.userData as! Int})!
+        dispatch_async(dispatch_get_main_queue(),{self.carouselView.scrollToItemAtIndex(index, animated: true)})
+        
+        return true
+    }
+    
     func mapView(mapView: GMSMapView, idleAtCameraPosition position: GMSCameraPosition) {
         
-        let geocoder = GMSGeocoder()
-
-        print()
+        if UtiltyFunction.checkInternetConnection() == false{
+            self.alert("To locate Doctors you need active Internet Connection", title: "No Internet Connection") { (action: UIAlertAction!) in
+            }
+        }
         
+        
+        let geocoder = GMSGeocoder()
         geocoder.reverseGeocodeCoordinate(position.target) { response, error in
             if let address = response?.firstResult() {
                 var city:String = "Bangalore"
@@ -102,82 +182,102 @@ class MapViewController: UIViewController, CLLocationManagerDelegate, iCarouselD
             }
         }
     
-
+    //MARK: Get doctors
     
     func showDoctors(city: String, near: String){
         
-        Alamofire.request(.GET, "https://api.practo.com/search", parameters: ["city":city,"near":near, "sort_by":"distance"], headers:["X-API-KEY":API_KEY, "X-CLIENT-ID":CLIENT_ID]).responseJSON { response in
-            
-            if let result_json = response.result.value {
-                let docs = result_json["doctors"] as? NSArray
-                for doc in docs!{
-                    let docId = doc.valueForKey("doctor_id") as! Int
-                    if doctors.indexOf({$0.docId == docId}) == nil{
+        //Filterig doctors not of speciality
+        
+        if speciality != ""{
+            for doctor in doctors{
+                doctor.marker.map = nil
+            }
+            doctors.removeAll()
+        }
+        
+        Alamofire.request(.GET, "https://api.practo.com/search", parameters: ["city":city,"near":near, "sort_by":"distance", "speciality": speciality], headers:["X-API-KEY":API_KEY, "X-CLIENT-ID":CLIENT_ID])
+            .validate()
+            .responseJSON { response in
+                
+                switch response.result{
+                case .Success :
+                    let json = JSON(response.result.value!)
+                    let docs = json["doctors"]
+                    for (_,doc) in docs{
                         
-                        let name = doc.valueForKey("doctor_name") as! String
-                        let speciality = (doc.valueForKey("specialties")![0]["specialty"]) as! String
-                        let photoUrl:String!
-                        let longitude = doc.valueForKey("longitude")! as! Double
-                        let latitude = doc.valueForKey("latitude")! as! Double
-
-                        if doc.valueForKey("photos")!.count != 0{
-                            photoUrl = (doc.valueForKey("photos")![0]["url"]) as! String
+                        let docId = doc["doctor_id"].int
+                        
+                        if doctors.indexOf({$0.docId == docId}) == nil{
+                            let name = doc["doctor_name"].string
+                            let speciality = doc["specialties"][0]["specialty"].string
+                            let photoUrl:String!
+                            let longitude = doc["longitude"].double
+                            let latitude = doc["latitude"].double
+                            
+                            if doc["photos"].count != 0{
+                                photoUrl = doc["photos"][0]["url"].string
+                            }
+                            else {
+                                photoUrl = "docImage"
+                            }
+                            
+                            let position = CLLocationCoordinate2DMake(latitude!, longitude!)
+                            
+                            let marker = GMSMarker(position: position)
+                            marker.icon = UIImage(named: "doctorPin")
+                            marker.appearAnimation = kGMSMarkerAnimationPop
+                            marker.title = name
+                            marker.userData = docId
+                            
+                            doctors.append(Doctor(docId: docId!, name: name!, speciality: speciality!, photoUrl: photoUrl, longitude: longitude!, latitude: latitude!, marker: marker))
+                            
+                            marker.map = self.mapView
+                        }
+                    }
+                    
+                    //Removing Markers out of visible region
+                    
+                    let visibleRegion : GMSVisibleRegion = self.mapView.projection.visibleRegion()
+                    let bounds = GMSCoordinateBounds(coordinate: visibleRegion.nearLeft, coordinate: visibleRegion.farRight)
+                    let northeast = bounds.northEast
+                    let southwest = bounds.southWest
+                    
+                    var temp:[Doctor] = []
+                    for doc in doctors{
+                        let lat = doc.latitude
+                        let long = doc.longitude
+                        if lat > northeast.latitude || lat < southwest.latitude || long > northeast.longitude || long < southwest.longitude{
+                            let marker = doc.marker
+                            marker.map = nil
                         }
                         else {
-                            photoUrl = "docImage"
+                            temp.append(doc)
                         }
-                        let position = CLLocationCoordinate2DMake(latitude, longitude)
-                        let marker = GMSMarker(position: position)
-                        marker.icon = UIImage(named: "doctorPin")
-                        marker.appearAnimation = kGMSMarkerAnimationPop
-                        marker.title = name
-                        marker.userData = docId
-                        doctors.append(Doctor(docId: docId, name: name, speciality: speciality, photoUrl: photoUrl, longitude: longitude, latitude: latitude, marker: marker))
-                        marker.map = self.mapView
                     }
-                }
-                let visibleRegion : GMSVisibleRegion = self.mapView.projection.visibleRegion()
-                let bounds = GMSCoordinateBounds(coordinate: visibleRegion.nearLeft, coordinate: visibleRegion.farRight)
-                let northeast = bounds.northEast
-                let southwest = bounds.southWest
-                
-                var temp:[Doctor] = []
-                for doc in doctors{
-                    let lat = doc.latitude
-                    let long = doc.longitude
-                    if lat > northeast.latitude || lat < southwest.latitude || long > northeast.longitude || long < southwest.longitude{
-                        let marker = doc.marker
-                        marker.map = nil
+                    
+                    doctors.removeAll(keepCapacity: true)
+                    for x in temp{
+                        doctors.append(x)
                     }
-                    else {
-                        temp.append(doc)
-                    }
+                    temp.removeAll()
+                    
+                    dispatch_async(dispatch_get_main_queue(), {self.carouselView.reloadData()})
+                    break
+                    
+                case .Failure : print("Error in getting data")
+                    
                 }
-                doctors.removeAll(keepCapacity: true)
-                for x in temp{
-                    doctors.append(x)
-                }
-                temp.removeAll()
-                dispatch_async(dispatch_get_main_queue(), {self.carouselView.reloadData()})
-            }
-            
+                    
         }
-
     }
     
-    func mapView(mapView: GMSMapView, didTapMarker marker: GMSMarker) -> Bool {
-        mapView.selectedMarker = marker
-        let index = doctors.indexOf({$0.docId == marker.userData as! Int})!
-        dispatch_async(dispatch_get_main_queue(),{self.carouselView.scrollToItemAtIndex(index, animated: true)})
-
-        return true
-    }
-    
+    //MARK: Carousel Delegates
     
     func numberOfItemsInCarousel(carousel: iCarousel) -> Int
     {
         return doctors.count
     }
+    
     
     func carousel(carousel: iCarousel, viewForItemAtIndex index: Int, reusingView view: UIView?) -> UIView
     {
@@ -190,7 +290,8 @@ class MapViewController: UIViewController, CLLocationManagerDelegate, iCarouselD
             carView.photoView.image = UIImage(named: "docImage")
         }
         else{
-            Alamofire.request(.GET, doctors[index].photoUrl).responseJSON{response in
+            let photoUrl = (doctors[index].photoUrl).stringByAddingPercentEncodingWithAllowedCharacters(.URLQueryAllowedCharacterSet())
+            Alamofire.request(.GET, photoUrl!).responseJSON{response in
                 carView.photoView.image = UIImage(data: response.data!)
             }
         }
@@ -204,6 +305,7 @@ class MapViewController: UIViewController, CLLocationManagerDelegate, iCarouselD
         }
         return carView
     }
+    
     
     func carousel(carousel: iCarousel, valueForOption option: iCarouselOption, withDefault value: CGFloat) -> CGFloat {
         if option == .Wrap{
