@@ -9,6 +9,9 @@
 import UIKit
 import CoreData
 import Alamofire
+import Fabric
+import Crashlytics
+
 
 var currentUser:GIDGoogleUser!
 
@@ -22,7 +25,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate, GIDSignInDelegate {
 
     func application(application: UIApplication, didFinishLaunchingWithOptions launchOptions: [NSObject: AnyObject]?) -> Bool {
         
-        
+        Fabric.with([Crashlytics.self])
+
         var configureError: NSError?
         GGLContext.sharedInstance().configureWithError(&configureError)
         GMSServices.provideAPIKey(AppDelegate.googleMapsApiKey)

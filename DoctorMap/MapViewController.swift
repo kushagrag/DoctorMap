@@ -21,6 +21,7 @@ class MapViewController: UIViewController, CLLocationManagerDelegate, iCarouselD
     let locationManager = CLLocationManager()
     
     var speciality:String = ""
+    var specialities:[String] = []
     var matchingSpecialities:[String] = []
     
     @IBOutlet weak var mapPin: UIImageView!
@@ -51,12 +52,27 @@ class MapViewController: UIViewController, CLLocationManagerDelegate, iCarouselD
         locationManager.requestWhenInUseAuthorization()
         
         mapPin.image = UIImage(named: "mapPin")
-               super.viewDidLoad()
+        
+        Alamofire.request(.GET,"https://api.practo.com/meta/search/cities/1",headers:["X-API-KEY":API_KEY, "X-CLIENT-ID":CLIENT_ID])
+            .validate()
+            .responseJSON{
+                response in
+                switch response.result{
+                case .Success:
+                    let json = JSON(response.result.value!)
+                    self.specialities = json["specialties"].arrayValue.map({$0.string!})
+                case .Failure:
+                    print("Cant access specialities")
+                }
+        }
+        
+        super.viewDidLoad()
     }
     
     //MARK: Load Favourites
     
     override func viewWillAppear(animated: Bool) {
+        
         tabBarController?.tabBar.hidden = false
         let appDelegate = UIApplication.sharedApplication().delegate as! AppDelegate
         let managedContext = appDelegate.managedObjectContext
@@ -106,7 +122,7 @@ class MapViewController: UIViewController, CLLocationManagerDelegate, iCarouselD
             dropDown.hidden = true
         }
         else {
-        matchingSpecialities = DataUtil.Specialities.filter( {
+        matchingSpecialities = specialities.filter( {
             $0.rangeOfString(searchText, options: .CaseInsensitiveSearch) !=  nil
         })
             if matchingSpecialities.count == 0{
