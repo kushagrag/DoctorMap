@@ -100,6 +100,8 @@ class FavouriteViewController: UIViewController, UITableViewDelegate, UITableVie
        
     }
     
+    //Opening profile of doctor on clivking table card
+    
     func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
         self.performSegueWithIdentifier("doctorSegue",sender: favList[indexPath.row])
     }
@@ -110,6 +112,8 @@ class FavouriteViewController: UIViewController, UITableViewDelegate, UITableVie
         let docId = sender as! Int
         destinationVC.docId = docId
     }
+    
+    //Delete Rows
     
     func tableView(tableView: UITableView, commitEditingStyle editingStyle: UITableViewCellEditingStyle, forRowAtIndexPath indexPath: NSIndexPath) {
         

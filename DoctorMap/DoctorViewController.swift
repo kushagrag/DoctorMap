@@ -36,8 +36,10 @@ class DoctorViewController: UIViewController,UITableViewDelegate, UITableViewDat
     
     override func viewDidLoad() {
         tabBarController?.tabBar.hidden = true
+        //Automatic Height for table view cell
         self.doctorTableView.estimatedRowHeight = 300
         self.doctorTableView.rowHeight = UITableViewAutomaticDimension
+        
         if UtiltyFunction.checkInternetConnection() == false{
             self.alert("To see Doctor Profile you need Internet connection", title: "No Internet Connection"){ (action: UIAlertAction!) in
                          self.navigationController?.popViewControllerAnimated(true)

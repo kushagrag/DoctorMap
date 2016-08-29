@@ -162,6 +162,8 @@ class MapViewController: UIViewController, CLLocationManagerDelegate, iCarouselD
         
     }
     
+    //Scroll to respective carousel card
+    
     func mapView(mapView: GMSMapView, didTapMarker marker: GMSMarker) -> Bool {
         mapView.selectedMarker = marker
         let index = doctors.indexOf({$0.docId == marker.userData as! Int})!
@@ -169,6 +171,8 @@ class MapViewController: UIViewController, CLLocationManagerDelegate, iCarouselD
         
         return true
     }
+    
+    //Reload map when user locks position
     
     func mapView(mapView: GMSMapView, idleAtCameraPosition position: GMSCameraPosition) {
         
@@ -294,6 +298,7 @@ class MapViewController: UIViewController, CLLocationManagerDelegate, iCarouselD
         return doctors.count
     }
     
+    //Add doctors to carousel
     
     func carousel(carousel: iCarousel, viewForItemAtIndex index: Int, reusingView view: UIView?) -> UIView
     {
@@ -322,6 +327,7 @@ class MapViewController: UIViewController, CLLocationManagerDelegate, iCarouselD
         return carView
     }
     
+    //Set spacing between cells
     
     func carousel(carousel: iCarousel, valueForOption option: iCarouselOption, withDefault value: CGFloat) -> CGFloat {
         if option == .Wrap{
@@ -332,6 +338,8 @@ class MapViewController: UIViewController, CLLocationManagerDelegate, iCarouselD
         }
         return value
     }
+    
+    //Opening doctor profile on click on carousel
     
     func carousel(carousel: iCarousel, didSelectItemAtIndex index: Int) {
         let docId = doctors[index].docId

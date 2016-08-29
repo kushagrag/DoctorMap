@@ -11,6 +11,8 @@ import Alamofire
 
 class DatabaseHelper{
     
+    //Create User
+    
     static func createUser() -> Bool{
         let appDelegate = UIApplication.sharedApplication().delegate as! AppDelegate
         let managedContext = appDelegate.managedObjectContext
@@ -62,6 +64,8 @@ class DatabaseHelper{
         }
         
     }
+    
+    //Add Favourites
     
     static func addFavourite(docId : Int) -> Bool{
         
@@ -137,6 +141,8 @@ class DatabaseHelper{
         }
 
     }
+    
+    //Remove Favourites
     
     static func removeFavourite(docId : Int) -> Bool{
         let appDelegate = UIApplication.sharedApplication().delegate as! AppDelegate

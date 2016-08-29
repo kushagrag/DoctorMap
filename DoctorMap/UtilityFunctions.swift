@@ -37,6 +37,8 @@ class UtiltyFunction{
     
 }
 
+//Utility to create an alert 
+
 extension UIViewController {
     
     func alert(message: String, title: String, handler: (UIAlertAction) -> Void) {
