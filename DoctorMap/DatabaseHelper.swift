@@ -14,28 +14,28 @@ class DatabaseHelper{
     //Create User
     
     static func createUser() -> Bool{
-        let appDelegate = UIApplication.sharedApplication().delegate as! AppDelegate
+        let appDelegate = UIApplication.shared.delegate as! AppDelegate
         let managedContext = appDelegate.managedObjectContext
         
-        let fetchRequest = NSFetchRequest(entityName: "User")
+        let fetchRequest = NSFetchRequest<NSManagedObject>(entityName: "User")
         fetchRequest.predicate = NSPredicate(format: "userId == %@", currentUser.userID)
         
         
         do {
             let results =
-                try managedContext.executeFetchRequest(fetchRequest)
+                try managedContext.fetch(fetchRequest)
             if (results.count == 0){
                 print("User Created")
-                let entity =  NSEntityDescription.entityForName("User",
-                                                                inManagedObjectContext:managedContext)
+                let entity =  NSEntityDescription.entity(forEntityName: "User",
+                                                         in:managedContext)
                 let user = NSManagedObject(entity: entity!,
-                                           insertIntoManagedObjectContext: managedContext)
+                                           insertInto: managedContext)
                 user.setValue(currentUser.userID, forKey: "userId")
                 user.setValue(currentUser.profile.name, forKey: "name")
                 user.setValue(currentUser.profile.email, forKey: "email")
-                var photo:NSData!
+                var photo:Data!
                 if currentUser.profile.hasImage == true{
-                    Alamofire.request(.GET, currentUser.profile.imageURLWithDimension(128)).responseJSON{response in
+                    Alamofire.request(currentUser.profile.imageURL(withDimension: 128)).responseJSON{response in
                         photo = response.data!
                         user.setValue(photo, forKey: "photo")
                         do {
@@ -67,19 +67,19 @@ class DatabaseHelper{
     
     //Add Favourites
     
-    static func addFavourite(docId : Int) -> Bool{
+    static func addFavourite(_ docId : Int) -> Bool{
         
-        let appDelegate = UIApplication.sharedApplication().delegate as! AppDelegate
+        let appDelegate = UIApplication.shared.delegate as! AppDelegate
         let managedContext = appDelegate.managedObjectContext
         
-        var fetchRequest = NSFetchRequest(entityName: "User")
+        var fetchRequest = NSFetchRequest<NSManagedObject>(entityName: "User")
         fetchRequest.predicate = NSPredicate(format: "userId == %@", currentUser.userID)
         
         var curUser:AnyObject!
         do{
-            let users = try managedContext.executeFetchRequest(fetchRequest)
+            let users = try managedContext.fetch(fetchRequest)
             curUser = users[0]
-            print(curUser.valueForKey("userId"))
+            print(curUser.value(forKey: "userId"))
             
         }catch let error as NSError {
             print("Could not Fetch \(error), \(error.userInfo)")
@@ -87,8 +87,8 @@ class DatabaseHelper{
         
         do{
             var curFavDoctorList:[Int] = []
-            if curUser.valueForKey("favDoctors") != nil{
-                curFavDoctorList = curUser.valueForKey("favDoctors") as! [Int]
+            if curUser.value(forKey:"favDoctors") != nil{
+                curFavDoctorList = curUser.value(forKey:"favDoctors") as! [Int]
             }
             curFavDoctorList.append(docId)
             curUser.setValue(curFavDoctorList, forKey: "favDoctors")
@@ -96,27 +96,27 @@ class DatabaseHelper{
             
             fetchRequest = NSFetchRequest(entityName: "Doctors")
             fetchRequest.predicate = NSPredicate(format: "docId == %ld", docId)
-            let entityDoctor = NSEntityDescription.entityForName("Doctors", inManagedObjectContext: managedContext)
+            let entityDoctor = NSEntityDescription.entity(forEntityName: "Doctors", in: managedContext)
             
             do{
-                let curDoctor = try managedContext.executeFetchRequest(fetchRequest)
+                let curDoctor = try managedContext.fetch(fetchRequest)
                 if curDoctor.count == 0{
-                    let doc = doctors[doctors.indexOf({$0.docId == docId})!]
-                    let doctor = NSManagedObject(entity: entityDoctor!, insertIntoManagedObjectContext: managedContext)
+                    let doc = doctors[doctors.index(where: {$0.docId == docId})!]
+                    let doctor = NSManagedObject(entity: entityDoctor!, insertInto: managedContext)
                     doctor.setValue(doc.name, forKey: "name")
                     doctor.setValue(doc.docId, forKey: "docId")
                     doctor.setValue(doc.speciality, forKey: "speciality")
                     doctor.setValue(doc.longitude, forKey: "longitude")
                     doctor.setValue(doc.latitude, forKey: "latitude")
-                    var photo:NSData!
+                    var photo:Data!
                     if doc.photoUrl == "docImage"{
-                        photo = UIImagePNGRepresentation(UIImage(named: doc.photoUrl)!)
+                        photo = (UIImagePNGRepresentation(UIImage(named: doc.photoUrl)!) as NSData!) as Data!
                         doctor.setValue(photo, forKey: "photo")
                         try managedContext.save()
                     }
                     else{
-                        let photoUrl = (doc.photoUrl).stringByAddingPercentEncodingWithAllowedCharacters(.URLQueryAllowedCharacterSet())
-                        Alamofire.request(.GET, photoUrl!).responseJSON{response in
+                        let photoUrl = (doc.photoUrl).addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)
+                        Alamofire.request(photoUrl!).responseJSON{response in
                             photo = response.data!
                             doctor.setValue(photo, forKey: "photo")
                             do{
@@ -129,7 +129,7 @@ class DatabaseHelper{
                     
                 }
                 else{
-                    let noOfReferences = curDoctor[0].valueForKey("noOfReferences") as! Int
+                    let noOfReferences = curDoctor[0].value(forKey:"noOfReferences") as! Int
                     curDoctor[0].setValue(noOfReferences + 1, forKey: "noOfReferences")
                     try managedContext.save()
                 }
@@ -144,18 +144,18 @@ class DatabaseHelper{
     
     //Remove Favourites
     
-    static func removeFavourite(docId : Int) -> Bool{
-        let appDelegate = UIApplication.sharedApplication().delegate as! AppDelegate
+    static func removeFavourite(_ docId : Int) -> Bool{
+        let appDelegate = UIApplication.shared.delegate as! AppDelegate
         let managedContext = appDelegate.managedObjectContext
         
-        var fetchRequest = NSFetchRequest(entityName: "User")
+        var fetchRequest = NSFetchRequest<NSManagedObject>(entityName: "User")
         fetchRequest.predicate = NSPredicate(format: "userId == %@", currentUser.userID)
         
         var curUser:AnyObject!
         do{
-            let users = try managedContext.executeFetchRequest(fetchRequest)
+            let users = try managedContext.fetch(fetchRequest)
             curUser = users[0]
-            print(curUser.valueForKey("userId"))
+            print(curUser.value(forKey:"userId"))
             
         }catch let error as NSError {
             print("Could not Fetch \(error), \(error.userInfo)")
@@ -165,13 +165,13 @@ class DatabaseHelper{
         fetchRequest.predicate = NSPredicate(format: "docId == %ld", docId)
         
         do{
-            var curDoctorList = curUser.valueForKey("favDoctors") as! [Int]
-            curDoctorList.removeAtIndex(curDoctorList.indexOf(docId)!)
+            var curDoctorList = curUser.value(forKey:"favDoctors") as! [Int]
+            curDoctorList.remove(at: curDoctorList.index(of: docId)!)
             curUser.setValue(curDoctorList, forKey: "favDoctors")
-            let curDoctor = try managedContext.executeFetchRequest(fetchRequest)
-            let noOfReferences = curDoctor[0].valueForKey("noOfReferences") as! Int
+            let curDoctor = try managedContext.fetch(fetchRequest)
+            let noOfReferences = curDoctor[0].value(forKey:"noOfReferences") as! Int
             if noOfReferences == 0{
-                managedContext.deleteObject(curDoctor[0] as! NSManagedObject)
+                managedContext.delete(curDoctor[0])
             }
             else {
                 curDoctor[0].setValue(noOfReferences - 1, forKey: "noOfReferences")

@@ -25,26 +25,26 @@ class FavouriteViewController: UIViewController, UITableViewDelegate, UITableVie
         favTableView.delegate = self
         favTableView.dataSource = self
         let nib = UINib(nibName: "FavouriteTableViewCell", bundle: nil)
-        favTableView.registerNib(nib, forCellReuseIdentifier: "cell")
+        favTableView.register(nib, forCellReuseIdentifier: "cell")
         
     }
     
     //MARK: Retrieving User Favourites
     
-    override func viewWillAppear(animated: Bool) {
-        tabBarController?.tabBar.hidden = false
-        let appDelegate = UIApplication.sharedApplication().delegate as! AppDelegate
+    override func viewWillAppear(_ animated: Bool) {
+        tabBarController?.tabBar.isHidden = false
+        let appDelegate = UIApplication.shared.delegate as! AppDelegate
         let managedContext = appDelegate.managedObjectContext
-        var fetchRequest = NSFetchRequest(entityName: "User")
+        var fetchRequest = NSFetchRequest<NSManagedObject>(entityName: "User")
         fetchRequest.predicate = NSPredicate(format: "userId == %@", currentUser.userID)
         do{
-            let users = try managedContext.executeFetchRequest(fetchRequest)
+            let users = try managedContext.fetch(fetchRequest)
             let curUser = users[0]
-            if curUser.valueForKey("favDoctors") == nil{
+            if curUser.value(forKey: "favDoctors") == nil{
                 favList = []
             }
             else{
-                favList = curUser.valueForKey("favDoctors") as! [Int]
+                favList = curUser.value(forKey: "favDoctors") as! [Int]
             }
         }catch let error as NSError{
             print("Data not fetched \(error), \(error.userInfo)")
@@ -58,7 +58,7 @@ class FavouriteViewController: UIViewController, UITableViewDelegate, UITableVie
             }
             fetchRequest.predicate = NSCompoundPredicate(orPredicateWithSubpredicates: predicates)
             do{
-                doctorList = try managedContext.executeFetchRequest(fetchRequest)
+                doctorList = try managedContext.fetch(fetchRequest)
             }catch let error as NSError{
                 print("Data not fetched \(error), \(error.userInfo)")
             }
@@ -66,13 +66,13 @@ class FavouriteViewController: UIViewController, UITableViewDelegate, UITableVie
         
     }
     
-    override func viewDidAppear(animated: Bool) {
+    override func viewDidAppear(_ animated: Bool) {
         favTableView.reloadData()
     }
     
     //MARK: TableView Delegates
 
-    func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         
         if favList == nil{
             return 0
@@ -84,13 +84,13 @@ class FavouriteViewController: UIViewController, UITableViewDelegate, UITableVie
     
     
     
-    func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
         
-        let cell = tableView.dequeueReusableCellWithIdentifier("cell", forIndexPath: indexPath) as! FavouriteTableViewCell
-        let name = doctorList[indexPath.row].valueForKey("name") as! String
-        let speciality = doctorList[indexPath.row].valueForKey("speciality") as! String
-        let photo = doctorList[indexPath.row].valueForKey("photo") as! NSData
+        let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath) as! FavouriteTableViewCell
+        let name = doctorList[(indexPath as NSIndexPath).row].value(forKey: "name") as! String
+        let speciality = doctorList[(indexPath as NSIndexPath).row].value(forKey: "speciality") as! String
+        let photo = doctorList[(indexPath as NSIndexPath).row].value(forKey: "photo") as! Data
         cell.favName.text = name
         cell.favSpeciality.text = speciality
         cell.favImage.image = UIImage(data: photo)
@@ -102,25 +102,25 @@ class FavouriteViewController: UIViewController, UITableViewDelegate, UITableVie
     
     //Opening profile of doctor on clivking table card
     
-    func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
-        self.performSegueWithIdentifier("doctorSegue",sender: favList[indexPath.row])
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        self.performSegue(withIdentifier: "doctorSegue",sender: favList[(indexPath as NSIndexPath).row])
     }
     
-    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject!) {
+    override func prepare(for segue: UIStoryboardSegue, sender: Any!) {
         
-        let destinationVC = segue.destinationViewController as! DoctorViewController
+        let destinationVC = segue.destination as! DoctorViewController
         let docId = sender as! Int
         destinationVC.docId = docId
     }
     
     //Delete Rows
     
-    func tableView(tableView: UITableView, commitEditingStyle editingStyle: UITableViewCellEditingStyle, forRowAtIndexPath indexPath: NSIndexPath) {
+    func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCellEditingStyle, forRowAt indexPath: IndexPath) {
         
-        DatabaseHelper.removeFavourite(favList[indexPath.row])
-        doctorList.removeAtIndex(indexPath.row)
-        favList.removeAtIndex(indexPath.row)
-        tableView.deleteRowsAtIndexPaths([indexPath], withRowAnimation: .Automatic)
+        DatabaseHelper.removeFavourite(favList[(indexPath as NSIndexPath).row])
+        doctorList.remove(at: (indexPath as NSIndexPath).row)
+        favList.remove(at: (indexPath as NSIndexPath).row)
+        tableView.deleteRows(at: [indexPath], with: .automatic)
    }
     
     override func didReceiveMemoryWarning() {

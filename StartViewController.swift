@@ -19,38 +19,36 @@ class StartViewController: UIViewController, GIDSignInUIDelegate {
         GIDSignIn.sharedInstance().uiDelegate = self
     }
     
-    override func viewDidAppear(animated: Bool) {
+    override func viewDidAppear(_ animated: Bool) {
         if UtiltyFunction.checkInternetConnection() == false {
             self.alert("This app needs active Internet connection", title: "No Internet Connection") {
                 (action: UIAlertAction!) in
-                    self.performSegueWithIdentifier("signInSegue", sender: self)
+                    self.performSegue(withIdentifier: "signInSegue", sender: self)
                 }
         }
         else{
             self.progressBar.setProgress(0.0, animated: false)
-            progressBar.hidden = false
-            dispatch_async(dispatch_get_main_queue(), {
+            progressBar.isHidden = false
+            DispatchQueue.main.async {
                 self.progressBar.setProgress(1.0, animated: true)
-            })
+            }
             if GIDSignIn.sharedInstance().hasAuthInKeychain(){
                 print("Already Sign in")
                 GIDSignIn.sharedInstance().signInSilently()
             }
             else {
                 print("Not Signed in")
-                
-                    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, Int64(1.0 * Double(NSEC_PER_SEC))),
-                                   dispatch_get_main_queue(),{
-                                    self.performSegueWithIdentifier("signInSegue", sender: self)
-                                   })
+                DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + Double(Int64(1.0 * Double(NSEC_PER_SEC))) / Double(NSEC_PER_SEC),execute: {
+                                self.performSegue(withIdentifier: "signInSegue", sender: self)
+                                })
           }
         }
     }
     
-    func signIn(signIn: GIDSignIn!, dismissViewController viewController: UIViewController!) {
+    func sign(_ signIn: GIDSignIn!, dismiss viewController: UIViewController!) {
     }
     
-    @IBAction func signIn(sender: GIDSignInButton) {
+    @IBAction func signIn(_ sender: GIDSignInButton) {
     }
 
     override func didReceiveMemoryWarning() {

@@ -35,21 +35,21 @@ class DoctorViewController: UIViewController,UITableViewDelegate, UITableViewDat
     
     
     override func viewDidLoad() {
-        tabBarController?.tabBar.hidden = true
+        tabBarController?.tabBar.isHidden = true
         //Automatic Height for table view cell
         self.doctorTableView.estimatedRowHeight = 300
         self.doctorTableView.rowHeight = UITableViewAutomaticDimension
         
         if UtiltyFunction.checkInternetConnection() == false{
             self.alert("To see Doctor Profile you need Internet connection", title: "No Internet Connection"){ (action: UIAlertAction!) in
-                         self.navigationController?.popViewControllerAnimated(true)
+                         self.navigationController?.popViewController(animated: true)
                 }
         }
         
-        Alamofire.request(.GET, "https://api.practo.com/doctors/\(docId)", parameters: ["id": docId, "with_relations": "true"], headers:["X-API-KEY":API_KEY, "X-CLIENT-ID":CLIENT_ID]).responseJSON { response in
+        Alamofire.request("https://api.practo.com/doctors/\(docId)", parameters: ["id": docId, "with_relations": "true"], headers:["X-API-KEY":API_KEY, "X-CLIENT-ID":CLIENT_ID]).responseJSON { response in
             
             switch response.result{
-            case .Success :
+            case .success :
                     let doctor = JSON(response.result.value!)
                     
                     self.docName = doctor["name"].string
@@ -64,7 +64,7 @@ class DoctorViewController: UIViewController,UITableViewDelegate, UITableViewDat
                         self.experience = 0
                     }
                     
-                    self.qualification = (doctor["qualifications"][0]["qualification"]["name"].string!).stringByAddingPercentEncodingWithAllowedCharacters(.URLQueryAllowedCharacterSet())
+                    self.qualification = (doctor["qualifications"][0]["qualification"]["name"].string!).addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)
                     
                     if doctor["photos"].count == 0{
                         self.docPhotoUrl =  "docImage"
@@ -79,7 +79,7 @@ class DoctorViewController: UIViewController,UITableViewDelegate, UITableViewDat
                         self.clinicPhotoUrl = "clinicDefault"
                     }
                     else{
-                        self.clinicPhotoUrl = (practice["photos"][0]["url"].string!).stringByAddingPercentEncodingWithAllowedCharacters(.URLQueryAllowedCharacterSet())
+                        self.clinicPhotoUrl = (practice["photos"][0]["url"].string!).addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)
                     }
                     
                     if practice["locality"]["name"].string != nil{
@@ -119,14 +119,12 @@ class DoctorViewController: UIViewController,UITableViewDelegate, UITableViewDat
                     
                     self.speciality = doctor["specializations"][0]["subspecialization"]["subspecialization"].string
                     
-                    dispatch_async(dispatch_get_main_queue(),{
+                    DispatchQueue.main.async {
                         self.loadData()
-                        })
-
-                    
+                    }
                     break
                 
-            case .Failure:
+            case .failure:
                 print("Cannot show Doctors data")
                 
             }
@@ -143,16 +141,16 @@ class DoctorViewController: UIViewController,UITableViewDelegate, UITableViewDat
     
     //MARK: TableView Delegates
     
-    func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return 5
     }
 
-    func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
         
         
-        if indexPath.row == 0{
-            let cell = tableView.dequeueReusableCellWithIdentifier("cell1") as! DoctorTableViewCell
+        if (indexPath as NSIndexPath).row == 0{
+            let cell = tableView.dequeueReusableCell(withIdentifier: "cell1") as! DoctorTableViewCell
             cell.layer.shadowOffset = CGSize(width: 3, height: 3);
             cell.layer.shadowOpacity = 0.1
             cell.doctorImage.layer.cornerRadius = (cell.doctorImage.frame.width) / 2
@@ -161,21 +159,21 @@ class DoctorViewController: UIViewController,UITableViewDelegate, UITableViewDat
                 cell.doctorImage.image = UIImage(named: "docImage")
             }
             else{
-                Alamofire.request(.GET, docPhotoUrl).responseJSON{ response in
+                Alamofire.request(docPhotoUrl).responseJSON{ response in
                     cell.doctorImage.image = UIImage(data: response.data!)
                 }
             }
             cell.nameLabel.text = docName
             cell.qualificationLabel.text = qualification
-            cell.qualificationLabel.textColor = UIColor.grayColor()
+            cell.qualificationLabel.textColor = UIColor.gray
             cell.specialityLabel.text = speciality
-            cell.specialityLabel.textColor = UIColor.grayColor()
+            cell.specialityLabel.textColor = UIColor.gray
             cell.experienceLabel.text = "\(experience) years of Experience"
-            cell.experienceLabel.textColor = UIColor.grayColor()
+            cell.experienceLabel.textColor = UIColor.gray
             return cell
         }
-        else if indexPath.row == 1{
-            let cell = tableView.dequeueReusableCellWithIdentifier("cell2") as! DoctorTableViewCell
+        else if (indexPath as NSIndexPath).row == 1{
+            let cell = tableView.dequeueReusableCell(withIdentifier: "cell2") as! DoctorTableViewCell
             cell.layer.shadowOffset = CGSize(width: 3, height: 3);
             cell.layer.shadowOpacity = 0.1
             cell.clinicImage.layer.cornerRadius = (cell.clinicImage.frame.width) / 2
@@ -184,7 +182,7 @@ class DoctorViewController: UIViewController,UITableViewDelegate, UITableViewDat
                 cell.clinicImage.image = UIImage(named: "clinicDefault")
             }
             else{
-                Alamofire.request(.GET, clinicPhotoUrl).responseJSON{ response in
+                Alamofire.request(clinicPhotoUrl).responseJSON{ response in
                     cell.clinicImage.image = UIImage(data: response.data!)
                 }
             }
@@ -194,15 +192,15 @@ class DoctorViewController: UIViewController,UITableViewDelegate, UITableViewDat
             
             return cell
         }
-        else if indexPath.row == 2 {
-            let cell = tableView.dequeueReusableCellWithIdentifier("cell3") as! DoctorTableViewCell
+        else if (indexPath as NSIndexPath).row == 2 {
+            let cell = tableView.dequeueReusableCell(withIdentifier: "cell3") as! DoctorTableViewCell
             cell.layer.shadowOffset = CGSize(width: 3, height: 3);
             cell.layer.shadowOpacity = 0.1
             cell.feeLabel.text = consultationFee
             return cell
         }
-        else if indexPath.row == 3 {
-            let cell = tableView.dequeueReusableCellWithIdentifier("cell4") as! DoctorTableViewCell
+        else if (indexPath as NSIndexPath).row == 3 {
+            let cell = tableView.dequeueReusableCell(withIdentifier: "cell4") as! DoctorTableViewCell
             cell.layer.shadowOffset = CGSize(width: 3, height: 3);
             cell.layer.shadowOpacity = 0.1
             cell.timingLabel.text = timings
@@ -211,23 +209,23 @@ class DoctorViewController: UIViewController,UITableViewDelegate, UITableViewDat
         else {
             var cell:DoctorTableViewCell!
             if services.count == 0{
-                cell = tableView.dequeueReusableCellWithIdentifier("cell8") as! DoctorTableViewCell
+                cell = tableView.dequeueReusableCell(withIdentifier: "cell8") as! DoctorTableViewCell
                 return cell
             }
             else if services.count == 1{
                 print("cell5")
-                cell = tableView.dequeueReusableCellWithIdentifier("cell5") as! DoctorTableViewCell
+                cell = tableView.dequeueReusableCell(withIdentifier: "cell5") as! DoctorTableViewCell
                 cell.service1.text = services[0]["service"]["name"].string!
             }
             else if services.count == 2{
                 print("cell6")
-                cell = tableView.dequeueReusableCellWithIdentifier("cell6") as! DoctorTableViewCell
+                cell = tableView.dequeueReusableCell(withIdentifier: "cell6") as! DoctorTableViewCell
                 cell.service1.text = services[0]["service"]["name"].string!
                 cell.service2.text = services[1]["service"]["name"].string!
             }
             else{
                 print("cell7")
-                cell = tableView.dequeueReusableCellWithIdentifier("cell7") as! DoctorTableViewCell
+                cell = tableView.dequeueReusableCell(withIdentifier: "cell7") as! DoctorTableViewCell
                 cell.service1.text = services[0]["service"]["name"].string!
                 cell.service2.text = services[1]["service"]["name"].string!
                 cell.service3.text = services[2]["service"]["name"].string!

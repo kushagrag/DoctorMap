@@ -22,20 +22,20 @@ class UserViewController: UIViewController {
         super.viewDidLoad()
         backgrounImage.image = UIImage(named: "profile-bg")
         profileImage.layer.borderWidth = 3.0
-        profileImage.layer.borderColor = UIColor.whiteColor().CGColor
+        profileImage.layer.borderColor = UIColor.white.cgColor
         profileImage.layer.cornerRadius = 10.0
         profileImage.clipsToBounds = true
-        let appDelegate = UIApplication.sharedApplication().delegate as! AppDelegate
+        let appDelegate = UIApplication.shared.delegate as! AppDelegate
         let managedContext = appDelegate.managedObjectContext
         
-        let fetchRequest = NSFetchRequest(entityName: "User")
+        let fetchRequest = NSFetchRequest<NSManagedObject>(entityName: "User")
         fetchRequest.predicate = NSPredicate(format: "userId == %@", currentUser.userID)
         
         do{
-            let user = try managedContext.executeFetchRequest(fetchRequest)
-            profileImage.image = UIImage(data: user[0].valueForKey("photo") as! NSData)
-            name.text = user[0].valueForKey("name") as? String
-            email.text = user[0].valueForKey("email") as? String
+            let user = try managedContext.fetch(fetchRequest)
+            profileImage.image = UIImage(data: user[0].value(forKey: "photo") as! Data)
+            name.text = user[0].value(forKey: "name") as? String
+            email.text = user[0].value(forKey: "email") as? String
         }catch let error as NSError{
             print("Cannot Fetch Data, \(error)")
         }
@@ -43,21 +43,21 @@ class UserViewController: UIViewController {
    
     //MARK: Actions
     
-    @IBAction func signOut(sender: UIButton) {
-        let signOutAlert = UIAlertController(title: "SignOut", message: "Really want to Sign Out", preferredStyle: .ActionSheet)
+    @IBAction func signOut(_ sender: UIButton) {
+        let signOutAlert = UIAlertController(title: "SignOut", message: "Really want to Sign Out", preferredStyle: .actionSheet)
         
-        let signOutAction = UIAlertAction(title: "Confirm", style: .Default, handler: { (action: UIAlertAction!) in
+        let signOutAction = UIAlertAction(title: "Confirm", style: .default, handler: { (action: UIAlertAction!) in
              GIDSignIn.sharedInstance().signOut()
-             self.performSegueWithIdentifier("showSignSegue", sender: self)
+             self.performSegue(withIdentifier: "showSignSegue", sender: self)
         })
         
-        let cancelAction = UIAlertAction(title: "Cancel", style: .Cancel, handler: { (action: UIAlertAction!) in
+        let cancelAction = UIAlertAction(title: "Cancel", style: .cancel, handler: { (action: UIAlertAction!) in
         })
         
         signOutAlert.addAction(signOutAction)
         signOutAlert.addAction(cancelAction)
         
-        presentViewController(signOutAlert, animated: true, completion: nil)
+        present(signOutAlert, animated: true, completion: nil)
 
        
     }

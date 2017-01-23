@@ -16,7 +16,7 @@ class CarouselTableViewCell:UIView {
     
     @IBInspectable var shadowOffsetWidth: Int = 2
     @IBInspectable var shadowOffsetHeight: Int = 2
-    @IBInspectable var shadowColor: UIColor? = UIColor.blackColor()
+    @IBInspectable var shadowColor: UIColor? = UIColor.black
     @IBInspectable var shadowOpacity: Float = 0.5
     
     override func layoutSubviews() {
@@ -24,10 +24,10 @@ class CarouselTableViewCell:UIView {
         
         layer.cornerRadius = cornerRadius
         let shadowPath = UIBezierPath(roundedRect: bounds, cornerRadius: cornerRadius)
-        layer.shadowColor = shadowColor?.CGColor
+        layer.shadowColor = shadowColor?.cgColor
         layer.shadowOffset = CGSize(width: shadowOffsetWidth, height: shadowOffsetHeight);
         layer.shadowOpacity = shadowOpacity
-        layer.shadowPath = shadowPath.CGPath
+        layer.shadowPath = shadowPath.cgPath
         photoView.layer.cornerRadius = 2
     }
     
@@ -40,20 +40,20 @@ class CarouselTableViewCell:UIView {
     
     var isFav = false
     
-    @IBAction func addRemoveFav(sender: AnyObject) {
+    @IBAction func addRemoveFav(_ sender: AnyObject) {
         
         
         if isFav == false {
-            favouriteButton.setImage(UIImage(named: "filledStar"), forState: .Normal)
+            favouriteButton.setImage(UIImage(named: "filledStar"), for: .normal)
             isFav = true
             favDoctorList.append(docId)
             DatabaseHelper.addFavourite(docId)
             
         }
         else{
-            favDoctorList.removeAtIndex(favDoctorList.indexOf(docId)!)
+            favDoctorList.remove(at: favDoctorList.index(of: docId)!)
             isFav = false
-            favouriteButton.setImage(UIImage(named: "emptyStar"), forState: .Normal)
+            favouriteButton.setImage(UIImage(named: "emptyStar"), for: .normal)
             DatabaseHelper.removeFavourite(docId)
             
         }

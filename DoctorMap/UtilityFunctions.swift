@@ -14,25 +14,19 @@ class UtiltyFunction{
     
     
     static func checkInternetConnection() -> Bool{
-        do {
-            let reachability:Reachability =  try Reachability.reachabilityForInternetConnection()
+            let reachability:Reachability =  Reachability()!
             
             switch reachability.currentReachabilityStatus{
-            case .ReachableViaWiFi:
+            case .reachableViaWiFi:
                 print("Connected With wifi")
                 return true
-            case .ReachableViaWWAN:
+            case .reachableViaWWAN:
                 print("Connected With Cellular network(3G/4G)")
                 return true
-            case .NotReachable:
+            case .notReachable:
                 print("Not Connected")
                 return false
             }
-        }
-        catch let error as NSError{
-            print(error.debugDescription)
-            return false
-        }
     }
     
 }
@@ -41,11 +35,11 @@ class UtiltyFunction{
 
 extension UIViewController {
     
-    func alert(message: String, title: String, handler: (UIAlertAction) -> Void) {
-        let alertController = UIAlertController(title: title, message: message, preferredStyle: .Alert)
-        let OKAction = UIAlertAction(title: "OK", style: .Default, handler: handler)
+    func alert(_ message: String, title: String, handler: @escaping (UIAlertAction) -> Void) {
+        let alertController = UIAlertController(title: title, message: message, preferredStyle: .alert)
+        let OKAction = UIAlertAction(title: "OK", style: .default, handler: handler)
         alertController.addAction(OKAction)
-        self.presentViewController(alertController, animated: true, completion: nil)
+        self.present(alertController, animated: true, completion: nil)
     }
     
 }

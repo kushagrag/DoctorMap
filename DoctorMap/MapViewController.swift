@@ -32,14 +32,14 @@ class MapViewController: UIViewController, CLLocationManagerDelegate, iCarouselD
     //MARK: Delegates
     
     override func viewDidLoad() {
-        dropDown.hidden = true
+        dropDown.isHidden = true
         dropDown.delegate = self
         dropDown.dataSource = self
-        self.dropDown.registerClass(UITableViewCell.self, forCellReuseIdentifier: "cell")
+        self.dropDown.register(UITableViewCell.self, forCellReuseIdentifier: "cell")
         
         dropDown.layer.cornerRadius = 5
         
-        carouselView.type = iCarouselType.Linear
+        carouselView.type = iCarouselType.linear
         carouselView.delegate = self
         carouselView.dataSource = self
         
@@ -53,39 +53,37 @@ class MapViewController: UIViewController, CLLocationManagerDelegate, iCarouselD
         
         mapPin.image = UIImage(named: "mapPin")
         
-        Alamofire.request(.GET,"https://api.practo.com/meta/search/cities/1",headers:["X-API-KEY":API_KEY, "X-CLIENT-ID":CLIENT_ID])
+        Alamofire.request("https://api.practo.com/meta/search/cities/1",headers:["X-API-KEY":API_KEY, "X-CLIENT-ID":CLIENT_ID])
             .validate()
             .responseJSON{
                 response in
                 switch response.result{
-                case .Success:
+                case .success:
                     let json = JSON(response.result.value!)
                     self.specialities = json["specialties"].arrayValue.map({$0.string!})
-                case .Failure:
+                case .failure:
                     print("Cant access specialities")
                 }
         }
-        
         super.viewDidLoad()
     }
     
     //MARK: Load Favourites
     
-    override func viewWillAppear(animated: Bool) {
-        
-        tabBarController?.tabBar.hidden = false
-        let appDelegate = UIApplication.sharedApplication().delegate as! AppDelegate
+    override func viewWillAppear(_ animated: Bool) {
+        tabBarController?.tabBar.isHidden = false
+        let appDelegate = UIApplication.shared.delegate as! AppDelegate
         let managedContext = appDelegate.managedObjectContext
-        let fetchRequest = NSFetchRequest(entityName: "User")
+        let fetchRequest = NSFetchRequest<NSManagedObject>(entityName: "User")
         fetchRequest.predicate = NSPredicate(format: "userId == %@", currentUser.userID)
         do{
-            let users = try managedContext.executeFetchRequest(fetchRequest)
+            let users = try managedContext.fetch(fetchRequest)
             let curUser = users[0]
-            if curUser.valueForKey("favDoctors") == nil{
+            if curUser.value(forKey: "favDoctors") == nil{
                 favDoctorList = []
             }
             else{
-                favDoctorList = curUser.valueForKey("favDoctors") as! [Int]
+                favDoctorList = curUser.value(forKey: "favDoctors") as! [Int]
             }
         }catch let error as NSError{
             print("Data not fetched \(error), \(error.userInfo)")
@@ -94,39 +92,43 @@ class MapViewController: UIViewController, CLLocationManagerDelegate, iCarouselD
 
     }
     
+    override func viewDidAppear(_ animated: Bool) {
+         self.mapView(mapView, idleAt: mapView.camera)
+    }
+    
     //MARK: DropDown Search
     
-    func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         
         return matchingSpecialities.count
     }
     
-    func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
-        let cell = tableView.dequeueReusableCellWithIdentifier("cell", forIndexPath: indexPath)
-        cell.textLabel!.text = matchingSpecialities[indexPath.row]
+        let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
+        cell.textLabel!.text = matchingSpecialities[(indexPath as NSIndexPath).row]
         return cell
     }
     
-    func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
-        speciality = matchingSpecialities[indexPath.row]
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        speciality = matchingSpecialities[(indexPath as NSIndexPath).row]
         searchSpeciality.text = speciality
         self.searchBarSearchButtonClicked(searchSpeciality)
     }
     
     //MARK: SearchBar
     
-    func searchBar(searchBar: UISearchBar, textDidChange searchText: String) {
-       dropDown.hidden = false
+    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+       dropDown.isHidden = false
         if searchText == "" {
-            dropDown.hidden = true
+            dropDown.isHidden = true
         }
         else {
         matchingSpecialities = specialities.filter( {
-            $0.rangeOfString(searchText, options: .CaseInsensitiveSearch) !=  nil
+            $0.range(of: searchText, options: .caseInsensitive) !=  nil
         })
             if matchingSpecialities.count == 0{
-                dropDown.hidden = true
+                dropDown.isHidden = true
             }
         }
 
@@ -134,25 +136,25 @@ class MapViewController: UIViewController, CLLocationManagerDelegate, iCarouselD
     }
     
     
-    func searchBarSearchButtonClicked(searchBar: UISearchBar) {
-        dropDown.hidden = true
+    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
+        dropDown.isHidden = true
         searchBar.resignFirstResponder()
         speciality = searchBar.text!
-        self.mapView(mapView, idleAtCameraPosition: mapView.camera)
+        self.mapView(mapView, idleAt: mapView.camera)
     }
 
     //MARK: MapDelegates
 
-    func locationManager(manager: CLLocationManager, didChangeAuthorizationStatus status: CLAuthorizationStatus) {
-        if status == .AuthorizedWhenInUse {
+    func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
+        if status == .authorizedWhenInUse {
             
             locationManager.startUpdatingLocation()
-            mapView.myLocationEnabled = true
+            mapView.isMyLocationEnabled = true
             mapView.settings.myLocationButton = true
         }
     }
     
-    func locationManager(manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         if let location = locations.first {
             
             mapView.camera = GMSCameraPosition(target: location.coordinate, zoom: 15, bearing: 0, viewingAngle: 0)
@@ -164,17 +166,19 @@ class MapViewController: UIViewController, CLLocationManagerDelegate, iCarouselD
     
     //Scroll to respective carousel card
     
-    func mapView(mapView: GMSMapView, didTapMarker marker: GMSMarker) -> Bool {
+    func mapView(_ mapView: GMSMapView, didTap marker: GMSMarker) -> Bool {
         mapView.selectedMarker = marker
-        let index = doctors.indexOf({$0.docId == marker.userData as! Int})!
-        dispatch_async(dispatch_get_main_queue(),{self.carouselView.scrollToItemAtIndex(index, animated: true)})
+        let index = doctors.index(where: {$0.docId == marker.userData as! Int})!
+        DispatchQueue.main.async {
+            self.carouselView.scrollToItem(at: index, animated: true)
+        }
         
         return true
     }
     
     //Reload map when user locks position
     
-    func mapView(mapView: GMSMapView, idleAtCameraPosition position: GMSCameraPosition) {
+    func mapView(_ mapView: GMSMapView, idleAt position: GMSCameraPosition) {
         
         if UtiltyFunction.checkInternetConnection() == false{
             self.alert("To locate Doctors you need active Internet Connection", title: "No Internet Connection") { (action: UIAlertAction!) in
@@ -204,10 +208,9 @@ class MapViewController: UIViewController, CLLocationManagerDelegate, iCarouselD
     
     //MARK: Get doctors
     
-    func showDoctors(city: String, near: String){
+    func showDoctors(_ city: String, near: String){
         
         //Filterig doctors not of speciality
-        
         if speciality != ""{
             for doctor in doctors{
                 doctor.marker.map = nil
@@ -215,19 +218,19 @@ class MapViewController: UIViewController, CLLocationManagerDelegate, iCarouselD
             doctors.removeAll()
         }
         
-        Alamofire.request(.GET, "https://api.practo.com/search", parameters: ["city":city,"near":near, "sort_by":"distance", "speciality": speciality], headers:["X-API-KEY":API_KEY, "X-CLIENT-ID":CLIENT_ID])
+        Alamofire.request("https://api.practo.com/search", parameters: ["city":city,"near":near, "sort_by":"distance", "speciality": speciality], headers:["X-API-KEY":API_KEY, "X-CLIENT-ID":CLIENT_ID])
             .validate()
             .responseJSON { response in
                 
                 switch response.result{
-                case .Success :
+                case .success :
                     let json = JSON(response.result.value!)
                     let docs = json["doctors"]
                     for (_,doc) in docs{
                         
                         let docId = doc["doctor_id"].int
                         
-                        if doctors.indexOf({$0.docId == docId}) == nil{
+                        if doctors.index(where: {$0.docId == docId}) == nil{
                             let name = doc["doctor_name"].string
                             let speciality = doc["specialties"][0]["specialty"].string
                             let photoUrl:String!
@@ -255,6 +258,7 @@ class MapViewController: UIViewController, CLLocationManagerDelegate, iCarouselD
                         }
                     }
                     
+                    
                     //Removing Markers out of visible region
                     
                     let visibleRegion : GMSVisibleRegion = self.mapView.projection.visibleRegion()
@@ -266,25 +270,27 @@ class MapViewController: UIViewController, CLLocationManagerDelegate, iCarouselD
                     for doc in doctors{
                         let lat = doc.latitude
                         let long = doc.longitude
-                        if lat > northeast.latitude || lat < southwest.latitude || long > northeast.longitude || long < southwest.longitude{
+                        if lat! > northeast.latitude || lat! < southwest.latitude || long! > northeast.longitude || long! < southwest.longitude{
                             let marker = doc.marker
-                            marker.map = nil
+                            marker?.map = nil
                         }
                         else {
                             temp.append(doc)
                         }
                     }
                     
-                    doctors.removeAll(keepCapacity: true)
+                    doctors.removeAll(keepingCapacity: true)
                     for x in temp{
                         doctors.append(x)
                     }
                     temp.removeAll()
                     
-                    dispatch_async(dispatch_get_main_queue(), {self.carouselView.reloadData()})
+                    DispatchQueue.main.async {
+                        self.carouselView.reloadData()
+                    }
                     break
                     
-                case .Failure : print("Error in getting data")
+                case .failure : print("Error in getting data")
                     
                 }
                     
@@ -293,17 +299,17 @@ class MapViewController: UIViewController, CLLocationManagerDelegate, iCarouselD
     
     //MARK: Carousel Delegates
     
-    func numberOfItemsInCarousel(carousel: iCarousel) -> Int
+    func numberOfItems(in carousel: iCarousel) -> Int
     {
         return doctors.count
     }
     
     //Add doctors to carousel
     
-    func carousel(carousel: iCarousel, viewForItemAtIndex index: Int, reusingView view: UIView?) -> UIView
+    func carousel(_ carousel: iCarousel, viewForItemAt index: Int, reusing view: UIView?) -> UIView
     {
         var carView:CarouselTableViewCell!
-        carView = NSBundle.mainBundle().loadNibNamed("CarouselTableViewCell", owner: self, options: nil)[0] as? CarouselTableViewCell
+        carView = Bundle.main.loadNibNamed("CarouselTableViewCell", owner: self, options: nil)?[0] as? CarouselTableViewCell
         carView.name.text = doctors[index].name
         carView.speciality.text = doctors[index].speciality
         carView.docId = doctors[index].docId
@@ -311,29 +317,32 @@ class MapViewController: UIViewController, CLLocationManagerDelegate, iCarouselD
             carView.photoView.image = UIImage(named: "docImage")
         }
         else{
-            let photoUrl = (doctors[index].photoUrl).stringByAddingPercentEncodingWithAllowedCharacters(.URLQueryAllowedCharacterSet())
-            Alamofire.request(.GET, photoUrl!).responseJSON{response in
+            let photoUrl = (doctors[index].photoUrl).addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)
+            Alamofire.request(photoUrl!).responseJSON{response in
                 carView.photoView.image = UIImage(data: response.data!)
             }
         }
-        if favDoctorList.indexOf(doctors[index].docId) == nil{
+        if favDoctorList.index(of: doctors[index].docId) == nil{
             carView.isFav = false
-            carView.favouriteButton.setImage(UIImage(named:"emptyStar"), forState: .Normal)
+            carView.favouriteButton.setImage(UIImage(named:"emptyStar"), for: UIControlState())
         }
         else{
             carView.isFav = true
-            carView.favouriteButton.setImage(UIImage(named:"filledStar"), forState: .Normal)
+            carView.favouriteButton.setImage(UIImage(named:"filledStar"), for: UIControlState())
+        }
+        if doctors[index].marker.map == nil{
+            doctors[index].marker.map = self.mapView
         }
         return carView
     }
     
     //Set spacing between cells
     
-    func carousel(carousel: iCarousel, valueForOption option: iCarouselOption, withDefault value: CGFloat) -> CGFloat {
-        if option == .Wrap{
+    func carousel(_ carousel: iCarousel, valueFor option: iCarouselOption, withDefault value: CGFloat) -> CGFloat {
+        if option == .wrap{
             return 1
         }
-        if option == .Spacing{
+        if option == .spacing{
             return value*1.1
         }
         return value
@@ -341,14 +350,14 @@ class MapViewController: UIViewController, CLLocationManagerDelegate, iCarouselD
     
     //Opening doctor profile on click on carousel
     
-    func carousel(carousel: iCarousel, didSelectItemAtIndex index: Int) {
+    func carousel(_ carousel: iCarousel, didSelectItemAt index: Int) {
         let docId = doctors[index].docId
-        self.performSegueWithIdentifier("doctorSegue",sender: docId)
+        self.performSegue(withIdentifier: "doctorSegue",sender: docId)
     }
     
-    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject!) {
+    override func prepare(for segue: UIStoryboardSegue, sender: Any!) {
         
-            let destinationVC = segue.destinationViewController as! DoctorViewController
+            let destinationVC = segue.destination as! DoctorViewController
             let docId = sender as! Int
             destinationVC.docId = docId
     }
